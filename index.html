@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Opcor</title>
+  <link rel="stylesheet" href="shiny.css">
+  <script type="text/javascript" src="show.js"></script>
+  <script type="text/javascript" src="scrape.js"></script>
+</head>
+<body onload="checkForUpdate()">
+  <div class="popup-spacer"><div id="popup" class="popup-box"></div></div>
+  <button id="back-button" class="back" onclick="goBack()"><div class="arr">&#8623;</div></button>
+  <div class="banner">
+    <div class="image-mask">
+      <div class="image-roll">
+        <img class="logo" src="img/opcor-logo.png"/>
+        <img class="logo" src="img/opcor-logo.png"/>
+      </div>
+    </div>
+  </div>
+  <div class="scale-box">
+    <div class="content-box">
+      <form action="javascript:executeSearchFromBox();">
+        can i watch
+        <input id="query-input" class="search" type="text" autofocus></input>
+        <button class="search" type="submit">?</button>
+      </form>
+    </div>
+  </div>
+  <div class="scale-box">
+    <div id="results" class="content-box">
+      search for a movie or a tv show up there ^
+    </div>
+  </div>
+  <div id="video-container" class="scale-box">
+    <div class="content-box">
+      <video id="video-embed" controls>
+        <source id="video-source" src="" type="video/mp4">
+      </video>
+    </div>
+  </div>
+  <div id="select-box" class="invisible-box"></div>
+  <div class="bottom">   opcor.   <a href="https://twitter.com/kyleryanboyle">made by me.</a>   <a href="https://github.com/kyle-rb/opcor">i made this one.</a>   all videos are hosted by someone other than me.</div>
+</body>
+</html>

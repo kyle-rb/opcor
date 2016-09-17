@@ -1,0 +1,239 @@
+body {
+    font-family: futura;
+    font-size: 16pt;
+    color: #c80058;
+    background-color: #1c1c1c;
+}
+a, a:visited, a:link {
+    color: #c80058;
+}
+::selection {
+    color: #6000f0;
+}
+.banner {
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    padding: 12px;
+    font-size: 28pt;
+    font-weight: bold;
+    text-align: center;
+    background-color: #1c1c1c;
+}
+.bottom {
+    position: fixed;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    height: 16px;
+    font-size: 8pt;
+    background-color: #1c1c1c;
+    white-space: pre-wrap;
+}
+.scale-box { /* scales incrementally relative to the screen size; centered in container */
+    width: 96%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 32px;
+}
+#video-container {
+    visibility: hidden;
+}
+.content-box { /* curved box with padding around text; fills container */
+    position: relative;
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: 2px 2px 6px #60686c inset;
+    background-color: #e0e8ec;
+}
+.result-box { /* each result box has one result inside it; they're meant to be listed */
+    position: relative;
+    left: 6px;
+    padding: 6px;
+    padding-left: 10px;
+    margin: 4px;
+    border-radius: 4px;
+    background-color: #f0f8fc;
+    cursor: pointer;
+    animation: bounce-in;
+    animation-duration: 1.2s;
+    animation-timing-function: linear;
+}
+.popup-spacer { /* wraps around the popup box to center it */
+    position: relative;
+    height: 0;
+    width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.popup-box { /* info box that slides in from the top and back out */
+    position: fixed;
+    top: -120px;
+    height: 60px;
+    width: 400px;
+    padding: 16px;
+    border-radius: 4px;
+    box-shadow: 4px 4px 16px #1c1c1c;
+    background-color: #e0e8ec;
+    text-align: center;
+    z-index: 1;
+    animation: slide-in;
+    animation-duration: 2.0s;
+    animation-iteration-count: infinite;
+    animation-play-state: paused;
+}
+.invisible-box { /* invisible box with text in it to be programatically selected, then copied */
+    position: fixed;
+    bottom: 0px;
+    left: 0px;
+    font-size: 2pt; /* can't be display:none or visibility:hidden because you can't select those */
+}
+.arr { /* box to rotate arrow inside button */
+    transform: translate(3px, -22px) rotate(90deg);
+}
+.image-mask { /* mask for rolling image */
+    position: relative;
+    display: inline-block;
+    height: 90px;
+    width: 270px;
+    overflow: hidden;;
+}
+.image-roll { /* container for rolling image */
+    position: absolute;
+    left: -270px;
+    width: 560px;
+}
+.image-roll:hover {
+    animation: roll-logo;
+    animation-duration: 3.0s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+}
+input.search {
+    position: relative;
+    width: 400px;
+    right: 0px;
+    margin: 4px 0px 0px 4px;
+    border-radius: 2px;
+    font-size: 16pt;
+    color: #401020;
+}
+input.search:focus {
+    outline-color: #b01030;
+}
+button {
+    cursor: pointer;
+}
+button:focus {
+    outline-style: none;
+}
+button.search {
+    position: relative;
+    top: 3px;
+    height: 40px;
+    width: 40px;
+    padding-top: 5px;
+    border-width: 3px;
+    border-color: #c01050;
+    border-radius: 6px;
+    font-family: "lucida console", monaco, monospace;
+    font-size: 32px;
+    color: #ffffff;
+    background-color: #c80058;
+}
+button.back {
+    position: absolute;
+    left: 30;
+    height: 40px;
+    width: 60px;
+    border-width: 3px;
+    border-color: #c01050;
+    border-radius: 6px;
+    font-size: 56px;
+    font-weight: bold;
+    color: #ffffff;
+    background-color: #c80058;
+    visibility: hidden;
+}
+button.search:active, button.back:active {
+    border-style: solid;
+    border-color: #c80058;
+}
+button.embed, button.window, button.download, button.copy {
+    position: relative;
+    height: 30px;
+    width: 30px;
+    margin: 6px;
+    border-width: 3px;
+    border-color: #c01050;
+    border-radius: 4px;
+    color: #e0e8ec;
+    background-color: #c80058;
+}
+button.embed {
+    background-image: url(img/embed.png);
+}
+button.window {
+    background-image: url(img/open-in-new.png);
+}
+button.download {
+    background-image: url(img/download.png);
+} 
+button.copy {
+    background-image: url(img/copy-to-clipboard.png);
+}
+button.embed:active, button.window:active, button.download:active, button.copy:active {
+    border-style: solid;
+    border-color: #c80058;
+}
+img.logo { /* contains logo; expands to width of container */
+    float: left;
+    width: 270px;
+}
+
+@media  screen and (max-device-width: 4in) { /* smartphone max width = ~4in */
+    body { font-size: 3em; }
+    .scale-box { width: 96%; }
+    .content-box { text-align: center; }
+    .bottom { height: 32px; font-size: 16pt; }
+    input.movie { width: 80%; font-size: 24pt; }
+    button.flat { padding-top: 0px; }
+}
+@media screen and (min-device-width: 4in) and (max-width: 660px) {
+    .content-box { text-align: center; }
+    input.search { width: 80%; right: 8px; }
+}
+@media screen and (min-device-width: 4in) and (min-width: 768px) { .scale-box { width: 720px; } }
+@media screen and (min-device-width: 4in) and (min-width: 1024px) { .scale-box { width: 976px; } }
+@media screen and (min-device-width: 4in) and (min-width: 1280px) { .scale-box { width: 1232px; } }
+
+@keyframes slide-in {
+    0% {top: -120px;}
+    25% {top: 20px;}
+    80% {top: 20px;}
+    100% {top: -120px;}
+}
+@keyframes bounce-in {
+    0% {left: 720px;}
+    28% {left: -18px;}
+    40% {left: 30px;}
+    56% {left: -3px;}
+    76% {left: 15px;}
+    100% {left: 6px;}
+}
+@keyframes roll-logo {
+    from {left: -270px;}
+    to {left: 0px;}
+}
+
+/*
+COLORS:
+  pink:      #c80059 -> text color
+  purple:    #6000f0 -> selection
+  dark-gray: #1c1c1c -> background color
+  red:       #b01030 -> old button color
+  light-red: #c01050 -> button outline
+  dark-red:  #401020 -> input text
+  off-white: #e0e8ec -> content box background
+  blue:      #4080f0 -> nothing right now
+*/
