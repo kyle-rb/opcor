@@ -78,7 +78,7 @@ a, a:visited, a:link {
     text-align: center;
     z-index: 1;
     animation: slide-in;
-    animation-duration: 2.0s;
+    animation-duration: 3.0s;
     animation-iteration-count: infinite;
     animation-play-state: paused;
 }
@@ -105,7 +105,7 @@ a, a:visited, a:link {
 }
 .image-roll:hover {
     animation: roll-logo;
-    animation-duration: 3.0s;
+    animation-duration: 5.0s;
     animation-iteration-count: infinite;
     animation-timing-function: linear;
 }
@@ -209,8 +209,8 @@ img.logo { /* contains logo; expands to width of container */
 
 @keyframes slide-in {
     0% {top: -120px;}
-    25% {top: 20px;}
-    80% {top: 20px;}
+    15% {top: 20px;}
+    90% {top: 20px;}
     100% {top: -120px;}
 }
 @keyframes bounce-in {

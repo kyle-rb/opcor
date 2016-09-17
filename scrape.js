@@ -162,7 +162,25 @@ function goBack() {
 }
 
 function checkForUpdate() {
-    
+    var currentVersionFile = JSON.parse(getPage("./version.json"));
+    var newestVersionFile = JSON.parse(getPage("https://raw.githubusercontent.com/kyle-rb/opcor/master/version.json"));
+
+    var currentVersion = currentVersionFile.version.split('.');
+    var newestVersion = newestVersionFile.version.split('.');
+    var displayMessage = "";
+    for (var i = 0; i < currentVersion.length; i++) {
+        if (currentVersion[i] < newestVersion[i]) {
+            displayMessage = newestVersionFile.message;
+            break;
+        }
+    }
+    if (displayMessage !== "") {
+        slideInPopup(displayMessage);
+    }
+    console.log(displayMessage);
+
+    console.log(currentVersionFile);
+    console.log(newestVersionFile);
 }
 
 // Helper functions
@@ -229,35 +247,6 @@ function slideInPopup(popupMessage) { // slides in an overlay window from the to
     popupBox.addEventListener("animationiteration",
                               function(){ this.style.animationPlayState = "paused"; });
 }
-
-
-
-// TODO:
-// DONE episode list html/css
-// DONE modify search html/css
-// DONE change heading to say opcor
-// DONE add movie title to qualities display
-// DONE add episode title to qualities display
-// DONE add enter to search
-// DONE add back button/previous results feauture
-//
-// NEW LAYOUT FOR RESULTS PAGE
-// DONE show video name on the top of the results thing
-//     DONE movie-name or tv-show-name: episode-name (season number as well?)
-// DONE 4 buttons for each quality option
-//     DONE embed video (<video> tag) https://design.google.com/icons/#ic_picture_in_picture_alt
-//     DONE open new window (<a target="_blank">) https://design.google.com/icons/#ic_open_in_new
-//     DONE download video (<a download>) https://design.google.com/icons/#ic_file_download
-//     DONE copy link (more complicated) https://design.google.com/icons/#ic_content_copy
-//     DONE to do all this, maybe use javascript format strings
-// N/A  see if I need to change the package.json file to allow mutiple windows
-// DONE hide the video tag when we do another search or go back to epoisodes/search results
-// DONE escape quotes and stuff from episode titles
-
-// DONE (mostly) due to flaws in the logic of search, it only gets the first 5 results
-// DONE also, if it doesn't find anything, it ends up returning the most popular shows
-// DONE it wasn't getting all the urls
-// logo
 
 // LATER: (maybe next release)
 //     add search history/shows i watch (maybe next version)
