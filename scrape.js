@@ -177,10 +177,6 @@ function checkForUpdate() {
     if (displayMessage !== "") {
         slideInPopup(displayMessage);
     }
-    console.log(displayMessage);
-
-    console.log(currentVersionFile);
-    console.log(newestVersionFile);
 }
 
 // Helper functions

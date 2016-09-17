@@ -5,7 +5,7 @@ const BrowserWindow = electron.BrowserWindow;
 let mainWindow
 
 function createWindow() {
-    mainWindow = new BrowserWindow({width: 800, height: 600, icon:'opcor-icon.png'});
+    mainWindow = new BrowserWindow({width: 800, height: 600, icon:'img/opcor-icon.png'});
     mainWindow.loadURL(`file://${__dirname}/index.html`); // grave accent indicates template string
     mainWindow.on("closed", function() {
 	mainWindow = null; // change this if we switch to multiple windows

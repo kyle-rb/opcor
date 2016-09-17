@@ -1,5 +1,10 @@
+@font-face {
+    font-family: "futura-dl";
+    src: url('Futura_ICG.ttf') format('truetype');
+}
+
 body {
-    font-family: futura;
+    font-family: "futura", "futura-dl";
     font-size: 16pt;
     color: #c80058;
     background-color: #1c1c1c;
