@@ -1,5 +1,6 @@
 // global variables - hold variables that need to be remembered between functions
 var pageHistory = [];
+var bookmarks; // this will get loaded in from a json file
 
 // global constants - denote start and end points of various parts of the page structure
 const iframeStart = "UEdsbWNtRnRaU0J6"; // double base64 encoding of "iframe s"
@@ -86,7 +87,7 @@ function listEpisodes(pageUrl, mediaTitle) {
         episodeCount = episodeTitles.length
         for (j = 0; j < episodeCount; j++) {
             fullEpisodeListString += '<div class="result-box" style="animation-delay:'
-                + ((j/10)-0.3) + 's;" onclick="getMp4StreamLinks(\'' + episodeUrls[j] + '\',\''
+                + ((j%7/10)-0.3) + 's;" onclick="getMp4StreamLinks(\'' + episodeUrls[j] + '\',\''
                 + mediaTitle + ': Season ' + (i+1) + ' Episode ' + (j+1) + ': '
                 + escape(episodeTitles[j]) + '\');"> Episode ' + (j+1) + ': ' + episodeTitles[j]
                 + '</div>';
@@ -110,13 +111,15 @@ function getMp4StreamLinks(pageUrl, mediaTitle) { // takes a search string; retu
     qualityLabels.forEach(function(str, index, arr){ arr[index] = str.substring(3, str.length) });
     
     var linkList = unescape(mediaTitle);
-    console.log(mediaTitle);
-    console.log(unescape(mediaTitle));
     for (var i = 0; i < urlCount; i++) {
         linkList += `<div class="result-box" style="cursor:default;animation-delay:${((i/10)-0.3)}s;">${qualityLabels[i]}: <button class="embed" onclick="embedVideo('${streamUrls[i]}');" title="embed this video in the page"></button><a href="${streamUrls[i]}" target="_blank"><button class="window" title="pop-out this video into a new window"></button></a><a href="${streamUrls[i]}" download><button class="download" title="download this video"></button></a><button class="copy" onclick="copyUrl('${streamUrls[i]}');" title="copy a link to this video to your clipboard"></button></div>`;
     }
+    if (pageHistory.length == 2) { // we're going from episode list to stream links
+        pageHistory[1].scrollPos = document.body.scrollTop; // save the scroll position
+    }
     pageHistory.push("");
     document.getElementById("results").innerHTML = linkList;
+    document.body.scrollTop = 0;
 }
 
 function embedVideo(videoUrl) {
@@ -158,7 +161,17 @@ function goBack() {
         pageHistory.pop(); // get rid of empty string from stream links page
         var showInfo = pageHistory.pop();
         listEpisodes(showInfo.url, showInfo.title);
+        document.body.scrollTop = showInfo.scrollPos; // sets the scroll position to where it was
     }
+}
+
+function retrieveBookmarks(bookmarkObject) {
+    bookmarks = bookmarkObject;
+}
+
+function bookmarkShow() {
+    // get the show title and url from the history page
+    // add these to the json file
 }
 
 function checkForUpdate() {

@@ -71,7 +71,7 @@ a, a:visited, a:link {
     margin-left: auto;
     margin-right: auto;
 }
-.popup-box { /* info box that slides in from the top and back out */
+.popup-box .popup-bookmark { /* info box that slides in from the top and back out */
     position: fixed;
     top: -120px;
     height: 60px;
@@ -86,6 +86,9 @@ a, a:visited, a:link {
     animation-duration: 3.0s;
     animation-iteration-count: infinite;
     animation-play-state: paused;
+}
+.popup-bookmark {
+    /* switch popup-box above to transitions */
 }
 .invisible-box { /* invisible box with text in it to be programatically selected, then copied */
     position: fixed;
@@ -146,9 +149,23 @@ button.search {
     color: #ffffff;
     background-color: #c80058;
 }
+button.bookmark-list {
+    position: absolute;
+    left: 8px;
+    height: 40px;
+    width: 40px;
+    border-width: 3px;
+    border-color: #c01050;
+    border-radius: 6px;
+    color: #e0e8ec;
+    background-color: #c80058;
+    background-image: url("img/bookmark-list.png");
+    background-size: 32px;
+    visibility: visible;
+}
 button.back {
     position: absolute;
-    left: 30;
+    left: 8px;
     height: 40px;
     width: 60px;
     border-width: 3px;
@@ -160,7 +177,7 @@ button.back {
     background-color: #c80058;
     visibility: hidden;
 }
-button.search:active, button.back:active {
+button.search:active, button.bookmark-list:active button.back:active {
     border-style: solid;
     border-color: #c80058;
 }
@@ -176,16 +193,16 @@ button.embed, button.window, button.download, button.copy {
     background-color: #c80058;
 }
 button.embed {
-    background-image: url(img/embed.png);
+    background-image: url("img/embed.png");
 }
 button.window {
-    background-image: url(img/open-in-new.png);
+    background-image: url("img/open-in-new.png");
 }
 button.download {
-    background-image: url(img/download.png);
+    background-image: url("img/download.png");
 } 
 button.copy {
-    background-image: url(img/copy-to-clipboard.png);
+    background-image: url("img/copy-to-clipboard.png");
 }
 button.embed:active, button.window:active, button.download:active, button.copy:active {
     border-style: solid;
