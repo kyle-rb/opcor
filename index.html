@@ -7,10 +7,11 @@
   <script type="text/javascript" src="scrape.js"></script>
 </head>
 <body onload="checkForUpdate()">
-  <div class="popup-spacer"><div id="popup" class="popup-box"></div></div>
-  <button id="bookmark-list-button" class="bookmark-list" onclick="openBookmarkList()"></button>
+  <button id="bookmark-list-button" class="bookmark-list" onclick="showBookmarks()"></button>
   <button id="back-button" class="back" onclick="goBack()"><div class="arr">&#8623;</div></button>
   <div class="banner">
+    <div class="alert-spacer"><div id="alert-popup"></div></div>
+    <div id="bookmark-popup"></div>
     <div class="image-mask">
       <div class="image-roll">
         <img class="logo" src="img/opcor-logo.png"/>
@@ -40,6 +41,6 @@
     </div>
   </div>
   <div id="select-box" class="invisible-box"></div>
-  <div class="bottom">   opcor.   <a href="https://twitter.com/kyleryanboyle" target="_blank" title="twitter (note: i don't actually ever tweet)">by me.</a>   <a href="https://github.com/kyle-rb/opcor" target="_blank" title="github">i made this one.</a>   all videos are hosted by someone other than me.   report bugs or whatever <a href="mailto:kyleryanboyle@gmail.com" title="kyleryanboyle@gmail.com" onclick="copyUrl('kyleryanboyle@gmail.com')">here</a>.</div>
+  <div class="bottom">   opcor.   <a href="https://twitter.com/kyleryanboyle" target="_blank" title="twitter (note: i don't actually ever tweet)">by me.</a>   <a href="https://github.com/kyle-rb/opcor" target="_blank" title="github">i made this one.</a>   all videos are hosted by someone other than me.   report bugs or whatever <a href="mailto:kyleryanboyle@gmail.com" title="kyleryanboyle@gmail.com" onclick="copyText('kyleryanboyle@gmail.com')">here</a>.</div>
 </body>
 </html>

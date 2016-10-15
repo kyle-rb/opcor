@@ -112,7 +112,7 @@ function getMp4StreamLinks(pageUrl, mediaTitle) { // takes a search string; retu
     
     var linkList = unescape(mediaTitle);
     for (var i = 0; i < urlCount; i++) {
-        linkList += `<div class="result-box" style="cursor:default;animation-delay:${((i/10)-0.3)}s;">${qualityLabels[i]}: <button class="embed" onclick="embedVideo('${streamUrls[i]}');" title="embed this video in the page"></button><a href="${streamUrls[i]}" target="_blank"><button class="window" title="pop-out this video into a new window"></button></a><a href="${streamUrls[i]}" download><button class="download" title="download this video"></button></a><button class="copy" onclick="copyUrl('${streamUrls[i]}');" title="copy a link to this video to your clipboard"></button></div>`;
+        linkList += `<div class="result-box" style="cursor:default;animation-delay:${((i/10)-0.3)}s;">${qualityLabels[i]}: <button class="embed" onclick="embedVideo('${streamUrls[i]}');" title="embed this video in the page"></button><a href="${streamUrls[i]}" target="_blank"><button class="window" title="pop-out this video into a new window"></button></a><a href="${streamUrls[i]}" download><button class="download" title="download this video"></button></a><button class="copy" onclick="copyText('${streamUrls[i]}');" title="copy a link to this video to your clipboard"></button></div>`;
     }
     if (pageHistory.length == 2) { // we're going from episode list to stream links
         pageHistory[1].scrollPos = document.body.scrollTop; // save the scroll position
@@ -133,15 +133,22 @@ function embedVideo(videoUrl) {
     }
 }
 
-function copyUrl(videoUrl) {
+function copyText(copyText, popupMessage) {
     var selectBox = document.getElementById("select-box");
-    selectBox.innerHTML = videoUrl;
+    selectBox.innerHTML = copyText;
     selectText("select-box");
     //document.designMode = "on"; // thought this had to be on to enable execCommand; MDN lied
     document.execCommand("copy", false, null); // copies whatever text is selected
     selectBox.innerHTML = "";
     
-    slideInPopup("link copied to clipboard");
+    slideInPopup(popupMessage, 2000); // show for 2 seconds
+}
+
+function showBookmarks() {
+    bookmarkBox = document.getElementById("bookmark-popup");
+    bookmarkBox.innerHTML = "test text";
+    bookmarkBox.style.top = "20px";
+    setTimeout(function(){ bookmarkBox.style.top = "-640px" }, 4000);
 }
 
 function goBack() {
@@ -178,24 +185,35 @@ function checkForUpdate() {
     var currentVersionFile = JSON.parse(getPage("./version.json"));
     var newestVersionFile = JSON.parse(getPage("https://raw.githubusercontent.com/kyle-rb/opcor/master/version.json"));
 
+    var updateNecessary = false;
     var currentVersion = currentVersionFile.version.split('.');
     var newestVersion = newestVersionFile.version.split('.');
-    var displayMessage = "";
+    var updateMessage = "";
     for (var i = 0; i < currentVersion.length; i++) {
         if (currentVersion[i] < newestVersion[i]) {
-            displayMessage = newestVersionFile.message;
+            updateMessage = newestVersionFile.message;
+            updateNecessary = true;
             break;
         }
+        if (currentVersion[i] > newestVersion[i]) {
+            break; // only continue loop if current version number is equal
+        }
     }
-    if (displayMessage !== "") {
-        slideInPopup(displayMessage);
+    if (updateNecessary) {
+        var popupText = "<a onclick='performUpdate()'>click here to begin update</a><br/>" + updateMessage;
+        slideInPopup(popupText, 8000); // show for 8 seconds
     }
+}
+
+function performUpdate() {
+    /* use npm to download new files and replace the old ones */
+    console.log("update will occur here");
 }
 
 // Helper functions
 function getPage(url) { // gets a string of the html of the page at the url passed in
     var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("GET", url, false); // false for synchronous request
+    xmlHttp.open("GET", url, false); // false for synchronous request; UI is frozen anyway
     xmlHttp.send(null);
     return xmlHttp.responseText;
 }
@@ -248,13 +266,11 @@ function selectText(element) {
     }
 }
 
-function slideInPopup(popupMessage) { // slides in an overlay window from the top of the screen
-    popupBox = document.getElementById("popup");
+function slideInPopup(popupMessage, popupDuration) { // slides in a popup from the top of the screen
+    popupBox = document.getElementById("alert-popup");
     popupBox.innerHTML = popupMessage;
-    popupBox.style.animationPlayState = "running";
-    // can't run an animation more than once; have to have it repeat and pause/play it every time
-    popupBox.addEventListener("animationiteration",
-                              function(){ this.style.animationPlayState = "paused"; });
+    popupBox.style.top = "20px";
+    setTimeout(function(){ popupBox.style.top = "-120px" }, popupDuration);
 }
 
 // LATER: (maybe next release)

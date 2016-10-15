@@ -64,31 +64,43 @@ a, a:visited, a:link {
     animation-duration: 1.2s;
     animation-timing-function: linear;
 }
-.popup-spacer { /* wraps around the popup box to center it */
+.alert-spacer, .bookmark-spacer { /* wraps around the popup box to center it */
     position: relative;
     height: 0;
-    width: 400px;
     margin-left: auto;
     margin-right: auto;
 }
-.popup-box .popup-bookmark { /* info box that slides in from the top and back out */
-    position: fixed;
-    top: -120px;
-    height: 60px;
+.alert-spacer {
     width: 400px;
+}
+/*.bookmark-spacer {
+    width: 600px;
+}*/
+#alert-popup, #bookmark-popup { /* boxes that slide in from the top */
+    position: fixed;
     padding: 16px;
     border-radius: 4px;
     box-shadow: 4px 4px 16px #1c1c1c;
+    font-size: 16pt;
     background-color: #e0e8ec;
-    text-align: center;
-    z-index: 1;
-    animation: slide-in;
-    animation-duration: 3.0s;
-    animation-iteration-count: infinite;
-    animation-play-state: paused;
 }
-.popup-bookmark {
-    /* switch popup-box above to transitions */
+#alert-popup { /* info box that slides in from the top and back out */
+    top: -120px;
+    height: 60px;
+    width: 400px;
+    text-align: center;
+    z-index: 2;
+    transition: top 0.5s;
+}
+#bookmark-popup { /* box containing bookmarks */
+    top: -640px;
+    height: 400px;
+    left: 60px;
+    right: 60px;
+    text-align: left;
+    overflow: scroll;
+    z-index: 1;
+    transition: top 1.0s;
 }
 .invisible-box { /* invisible box with text in it to be programatically selected, then copied */
     position: fixed;
@@ -177,7 +189,7 @@ button.back {
     background-color: #c80058;
     visibility: hidden;
 }
-button.search:active, button.bookmark-list:active button.back:active {
+button.search:active, button.bookmark-list:active, button.back:active {
     border-style: solid;
     border-color: #c80058;
 }
@@ -229,12 +241,14 @@ img.logo { /* contains logo; expands to width of container */
 @media screen and (min-device-width: 4in) and (min-width: 1024px) { .scale-box { width: 976px; } }
 @media screen and (min-device-width: 4in) and (min-width: 1280px) { .scale-box { width: 1232px; } }
 
+/* changed this to a transition
 @keyframes slide-in {
     0% {top: -120px;}
     15% {top: 20px;}
     90% {top: 20px;}
     100% {top: -120px;}
 }
+*/
 @keyframes bounce-in {
     0% {left: 720px;}
     28% {left: -18px;}
