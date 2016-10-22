@@ -1,0 +1,4 @@
+{
+    "dirname": "assets",
+    "files": ["main.js", "index.html", "window.html", "shiny.css", "scrape.js", "Futura_ICG.ttf", "package.json", "filelist.json", "license.txt", "README.md", { "dirname": "img", "files": ["bookmark-border.png", "bookmark-filled.png", "bookmark-list.png", "copy-to-clipboard.png", "opcor-icon.png", "download.png", "embed.png", "opcor-icon.png", "opcor-icon.icns", "opcor-logo.png", "open-in-new.png"] }]
+}

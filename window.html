@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Opcor</title>
+  <link rel="stylesheet" href="shiny.css">
+  <script>
+    var video;
+    function loadVideo() {
+      document.getElementById('video-source').src=window.location.hash.slice(1);
+      if (!video) { video = document.getElementById('video-fill'); }
+      video.load();
+      video.play();
+    }
+    function onPress(event) {
+      if (event.keyCode == 32) { // spacebar pressed
+        video.paused ? video.play() : video.pause();
+      }
+    }
+  </script>
+</head>
+<body onload="loadVideo()" onkeydown="onPress(event)">
+<video id="video-fill" controls>
+  <source id="video-source" src="" type="video/mp4">
+</video>
+</body>
+</html>

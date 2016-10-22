@@ -73,9 +73,6 @@ a, a:visited, a:link {
 .alert-spacer {
     width: 400px;
 }
-/*.bookmark-spacer {
-    width: 600px;
-}*/
 #alert-popup, #bookmark-popup { /* boxes that slide in from the top */
     position: fixed;
     padding: 16px;
@@ -128,6 +125,11 @@ a, a:visited, a:link {
     animation-duration: 5.0s;
     animation-iteration-count: infinite;
     animation-timing-function: linear;
+}
+#video-fill {
+    position: absolute;
+    width: 100%;
+    left: 0px;
 }
 input.search {
     position: relative;
