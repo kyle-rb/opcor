@@ -55,7 +55,7 @@ const oldFileSuffix = "~OLD";
 var updateStatus = { // this is lightweight and a singleton so I'm just going to keep it around and not bother with creation/deletion
     oldFileList: {}, newFileList: {},
     filesQueued: 0, allFilesQueued: false, // are all files queued to be loaded/renamed/saved/deleted?
-    nextAction: function {},
+    nextAction: function() {},
     actionStarted: function(isLastFile) {++filesQueued; allFilesQueued = isLastFile },
     actionCompleted: function() { if ((--filesQueued == 0) && allFilesQueued) { nextAction(); } },
     loadCompleted: function(fileName, fileContents) { newFileList[fileName] = fileContents; actionCompleted(); }
@@ -70,7 +70,7 @@ function getFile(filePath, callback) { // gets a string of the html of the page 
     var result = "";
     var req = request(fileLocation + filePath, function(error, response, body) {
         if (!error && response.statusCode == 200) {
-            callback(JSON.parse(body);
+            callback(JSON.parse(body));
         }
         else {
             console.log("FAILED WITH STATUS: " + response.statusCode);
