@@ -1,4 +1,4 @@
 {
     "version": "1.0.1",
-    "message": "<br/><br/><br/><br/><br/><br/><p style='color:#6000f0;background-color:#1c1c1c;'>Unfortunately, the site that Opcor steals videos from (putlocker.is) is down. I'm working on transitioning to use a different site. Sorry for the inconvenience; you'll be notified in the app when a new version is ready.</p>"
+    "message": "there's a new update that fixes everything! <a onclick='performUpdate()'>click here to update</a>"
 }

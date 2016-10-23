@@ -218,7 +218,7 @@ function embedVideo(videoUrl) {
     }
 }
 
-function copyText(copyText, popupMessage) {
+function copyText(copyText) {
     var selectBox = document.getElementById("select-box");
     selectBox.innerHTML = copyText;
     selectText("select-box");
@@ -226,7 +226,7 @@ function copyText(copyText, popupMessage) {
     document.execCommand("copy", false, null); // copies whatever text is selected
     selectBox.innerHTML = "";
     
-    slideInPopup(popupMessage, 2000); // show for 2 seconds
+    slideInPopup("link copied to clipboard", 2000); // show for 2 seconds
 }
 
 function showBookmarks() {
@@ -287,14 +287,18 @@ function checkForUpdate() {
         }
     }
     if (updateNecessary) {
-        var popupText = "<a onclick='performUpdate()'>click here to begin update</a><br/>" + updateMessage;
+        var popupText = updateMessage;
         slideInPopup(popupText, 8000); // show for 8 seconds
     }
 }
 
 function performUpdate() {
-    console.log("update initiated");
+    console.log("update started");
     beginUpdateInMain();
+}
+function updateFinished() {
+    console.log("update completed");
+    slideInPopup("update complete! please restart Opcor now", 20000); // show for 20 seconds
 }
 
 // Helper functions
