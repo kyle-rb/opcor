@@ -50,21 +50,21 @@ app.on("keydown", function(key) {
     5. Display a message to the user that the update is complete, and to restart the app for the changes to take effect.
 */
 const fileLocation = "https://raw.githubusercontent.com/kyle-rb/opcor/master/";
-const newFileSuffix = "~NEW"
+const newFileSuffix = "~NEW";
 const oldFileSuffix = "~OLD";
 
 var updateStatus = { // this is lightweight and a singleton so I'm just going to keep it around and not bother with creation/deletion
-    oldFileList: {}, newFileList: {},
+    oldFileList: {}, newFileList: {}, // object with list of files named 'files'
     filesQueued: 0, allFilesQueued: false, // are all files queued to be loaded/renamed/saved/deleted?
     nextAction: function() {},
-    actionStarted: function(isLastFile) {++this.filesQueued; this.allFilesQueued = this.isLastFile },
+    actionStarted: function(isLastFile) {++this.filesQueued; this.allFilesQueued = isLastFile },
     actionCompleted: function() { if ((--this.filesQueued == 0) && this.allFilesQueued) { this.nextAction(); } },
 }
 
 function beginUpdateInMain() {
     console.log("ready to update");
     updateStatus.oldFileList = JSON.parse(fs.readFileSync("./filelist.json", "utf8"));
-    var newFileList = getFile(fileLocation + "filelist.json", loadNewFiles);
+    getFile(fileLocation + "filelist.json", loadNewFiles);
 }
 function getFile(filePath, callback) { // gets a string of the html of the page at the url passed in
     var result = "";
@@ -77,13 +77,13 @@ function getFile(filePath, callback) { // gets a string of the html of the page 
         }
     });
 }
-function loadNewFiles(filePath, newFileListString) {
-    var newFileList = 
-    var fileCount = newFileList.length;
+function loadNewFiles(fileListPath, newFileListString) {
+    updateStatus.newFileList = JSON.parse(newFileListString);
+    var fileCount = updateStatus.newFileList.files.length;
     updateStatus.nextAction = renameOldFiles;
     updateStatus.filesQueued = 0;
     updateStatus.allFilesQueued = false;
-    newFileList.files.forEach(function(fileName, index) {
+    updateStatus.newFileList.files.forEach(function(fileName, index) {
         updateStatus.actionStarted(index == fileCount-1);
         getFile(fileName, saveFile);
     });
@@ -92,6 +92,8 @@ function saveFile(fileName, fileContents) {
     fs.writeFile(fileName + newFileSuffix, fileContents, updateStatus.actionCompleted);
 }
 function renameOldFiles() {
+    console.log("all files saved");
+    return; // remove this
     updateStatus.nextAction = saveNewFiles;
     updateStatus.filesQueued = 0;
     updateStatus.allFilesQueued = false;
@@ -106,7 +108,7 @@ function saveNewFiles() {
     updateStatus.allFilesQueued = false;
     for (var fileName in updateStatus.newFileList) {
         updateStatus.actionStarted(index == fileCount-1);
-        //fs.writeFile(fileName, updateStatus.newFileList[fileName], updateStatus.actionCompleted);
+        //fs.write(fileName, updateStatus.newFileList[fileName], updateStatus.actionCompleted);
     }
 }
 function deleteOldFiles() {
