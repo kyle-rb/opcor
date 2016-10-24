@@ -20,6 +20,7 @@ const episodeTitleEnd = "<"; // end of each episode title
 const iframeStart = "<iframe"; // iframe tag
 const iframeEnd = "</iframe>"; // iframe end tag
 const urlStart = "http:"; // start of the iframe's source
+const put9UrlStart = "http://putlocker9.com/watch"; // to filter out other links
 const urlEnd = movieTitleEnd; // (double quote) end of the iframe's source
 const vodSectionStart = ";Vodlocker.com"; // vodlocker label
 const vodSectionEnd = "target="; // stop after href
@@ -47,13 +48,15 @@ function searchMedia(queryString) {
     var searchPage = getPage(searchUrl);
     var resultsSection = getSubstrings(searchPage, searchResultsStart, searchResultsEnd)[0];
     var resultCount = (resultsSection.match(/aaa_item/g)||[]).length; // there are more urls than results
-    var allUrls = getSubstrings(resultsSection, urlStart, urlEnd, resultCount * 3);
+    var allUrls = getSubstrings(resultsSection, put9UrlStart, urlEnd, resultCount * 2);
     var pageUrls = [];
-    allUrls.forEach(function(url, index){ if (index % 4 == 0) { pageUrls.push(url) } }); // filter image/ref links
+    console.log(allUrls, allUrls.length);
+    allUrls.forEach(function(url, index){ if (index % 2 == 0) { pageUrls.push(url) } }); // 2 links per item; only take 1
     var allTitles = getSubstrings(resultsSection, movieTitleStart, movieTitleEnd, resultCount * 2);
     var pageTitles = [];
     allTitles.forEach(function(str,i){if(i%2 == 0){pageTitles.push(str.substring(7,str.length))}});
     // have to filter out other urls/titles and get rid of the 'title="' on each title
+    console.log(pageUrls);
     
     var resultList = "are any of these the thing you wanted to watch?<br/><br/>";
     for (var i = 0; i < resultCount; i++) {
@@ -161,8 +164,8 @@ function getMp4StreamLinks(pageSource, pageUrl, mediaTitle) { // takes a search 
             linkList += `<div class="result-box" style="cursor:default;animation-delay:${((i/10)-0.3)}s;">${labelList[i]}: 
             <button class="embed" onclick="embedVideo('${streamUrlList[i]}');" title="embed this video in the page"></button>
             <a href="window.html#${streamUrlList[i]}" target="_blank">
-              <button class="window" title="pop-out this video into a new window"></button>
-            </a>
+                <button class="window" title="pop-out this video into a new window">
+            </button></a>
             <a href="${streamUrlList[i]}" download><button class="download" title="download this video"></button></a>
             <button class="copy" onclick="copyText('${streamUrlList[i]}');" title="copy a link to this video to your clipboard"></button>
             </div>`;
