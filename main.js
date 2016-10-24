@@ -57,8 +57,8 @@ var updateStatus = { // this is lightweight and a singleton so I'm just going to
     oldFileList: {}, newFileList: {}, // object with list of files named 'files'
     filesQueued: 0, allFilesQueued: false, // are all files queued to be loaded/renamed/saved/deleted?
     nextAction: function() {},
-    actionStarted: function(isLastFile) {++this.filesQueued; this.allFilesQueued = isLastFile },
-    actionCompleted: function() { if ((--this.filesQueued == 0) && this.allFilesQueued) { this.nextAction(); } },
+    actionStarted: function(isLastFile) { ++this.filesQueued; this.allFilesQueued = isLastFile; },
+    actionCompleted: function() { if ((--this.filesQueued == 0) && this.allFilesQueued) { this.nextAction(); } }
 }
 
 function beginUpdateInMain() {
@@ -70,6 +70,7 @@ function getFile(filePath, callback) { // gets a string of the html of the page 
     var result = "";
     var req = request(fileLocation + filePath, function(error, response, body) {
         if (!error && response.statusCode == 200) {
+            console.log(filePath + " loaded");
             callback(filePath, body);
         }
         else {
@@ -83,6 +84,7 @@ function loadNewFiles(fileListPath, newFileListString) {
     updateStatus.nextAction = renameOldFiles;
     updateStatus.filesQueued = 0;
     updateStatus.allFilesQueued = false;
+    console.log("load loop starting");
     updateStatus.newFileList.files.forEach(function(fileName, index) {
         updateStatus.actionStarted(index == fileCount-1);
         getFile(fileName, saveFile);
@@ -90,6 +92,7 @@ function loadNewFiles(fileListPath, newFileListString) {
 }
 function saveFile(fileName, fileContents) {
     fs.writeFile(fileName + newFileSuffix, fileContents, updateStatus.actionCompleted);
+    console.log(fileName + " being written");
 }
 function renameOldFiles() {
     console.log("all files saved");
@@ -108,7 +111,7 @@ function saveNewFiles() {
     updateStatus.allFilesQueued = false;
     for (var fileName in updateStatus.newFileList) {
         updateStatus.actionStarted(index == fileCount-1);
-        //fs.write(fileName, updateStatus.newFileList[fileName], updateStatus.actionCompleted);
+        //fs.writeFile(fileName + "~", updateStatus.newFileList[fileName], updateStatus.actionCompleted);
     }
 }
 function deleteOldFiles() {

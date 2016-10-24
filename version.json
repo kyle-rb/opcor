@@ -1,4 +1,4 @@
 {
-    "version": "1.0.1",
+    "version": "1.0.0",
     "message": "there's a new update that fixes everything! <a onclick='performUpdate()'>click here to update</a>"
 }
