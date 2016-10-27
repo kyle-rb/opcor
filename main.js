@@ -44,8 +44,9 @@ app.on("keydown", function(key) {
     On update:
     1. Download new "filelist.json" from the internet and parse it. If this fails, end process and say update failed.
     2. Go through file list and rename all files to filename + "~OLD". Don't edit directory names.
-    3. For each file, listed in the new filelist, download and save it.
-    4. When we've downloaded and saved all files, iterate though the renamed ones and delete them.
+    3. For each file, listed in the new filelist, download and save it with its name + "~NEW"
+    4. When we've downloaded and saved all files, iterate though the renamed old ones and delete them.
+    5. Rename all the new ones to their actualy filename.
     5. Display a message to the user that the update is complete, and to restart the app for the changes to take effect.
 */
 const fileLocation = "https://raw.githubusercontent.com/kyle-rb/opcor/master/";
@@ -62,75 +63,78 @@ var updateStatus = { // this is lightweight and a singleton so I'm just going to
 
 function beginUpdateInMain() {
     console.log("ready to update");
-    updateStatus.oldFileList = JSON.parse(fs.readFileSync("./filelist.json", "utf8"));
+    mainWindow.webContents.executeJavaScript("slideInPopup('update started', 2000)");
+    updateStatus.oldFileList = JSON.parse(fs.readFileSync(__dirname + "/filelist.json", "utf8"));
+
     getFile(fileLocation + "filelist.json", loadNewFiles);
 }
 function getFile(filePath, callback) { // gets a string of the data at the specified url passed in
     var result = "";
     var req = request(fileLocation + filePath, function(error, response, body) {
         if (!error && response.statusCode == 200) {
-            console.log(filePath + " loaded");
             callback(filePath, body);
         }
         else {
             console.log("FAILED WITH STATUS: " + response.statusCode);
+            mainWindow.webContents.executeJavaScript("slideInPopup('file request failed', 2000)");
         }
     });
 }
 function loadNewFiles(fileListPath, newFileListString) {
-    mainWindow.webContents.executeJavascript("slideInPopup('downloaded new file list', 2000)");
+    mainWindow.webContents.executeJavaScript("slideInPopup('downloaded new file list', 2000)");
 
     updateStatus.newFileList = JSON.parse(newFileListString);
     var fileCount = updateStatus.newFileList.files.length;
     updateStatus.nextAction = renameOldFiles;
     updateStatus.filesQueued = 0;
     updateStatus.allFilesQueued = false;
-    console.log("load loop starting");
     updateStatus.newFileList.files.forEach(function(fileName, index) {
         updateStatus.actionStarted(index == fileCount-1);
         getFile(fileName, saveFile);
     });
-    console.log("queuecountmax=" + updateStatus.filesQueued);
 }
 function saveFile(fileName, fileContents) {
-    fs.writeFile(fileName + newFileSuffix, fileContents, updateStatus.actionCompleted);
-    console.log(fileName + " being written");
+    fs.writeFile(__dirname + "/" + fileName + newFileSuffix, fileContents, updateStatus.actionCompleted);
 }
 function renameOldFiles() {
-    mainWindow.webContents.executeJavascript("slideInPopup('downloaded new files', 2000)");
+    mainWindow.webContents.executeJavaScript("slideInPopup('downloaded new files', 2000)");
 
-    updateStatus.nextAction = saveNewFiles;
+    var fileCount = updateStatus.oldFileList.files.length;
+    updateStatus.nextAction = renameNewFiles;
     updateStatus.filesQueued = 0;
     updateStatus.allFilesQueued = false;
     updateStatus.oldFileList.files.forEach(function(fileName, index) {
         updateStatus.actionStarted(index == fileCount-1);
-        fs.rename(fileName, fileName + oldFileSuffix, updateStatus.actionCompleted);
+        fs.rename(__dirname + "/" + fileName, __dirname + "/" + fileName + oldFileSuffix, updateStatus.actionCompleted);
     });
 }
 function renameNewFiles() {
-    mainWindow.webContents.executeJavascript("slideInPopup('renamed old files', 2000)");
+    mainWindow.webContents.executeJavaScript("slideInPopup('renamed old files', 2000)");
 
+    var fileCount = updateStatus.newFileList.files.length;
     updateStatus.nextAction = deleteOldFiles;
     updateStatus.filesQueued = 0;
     updateStatus.allFilesQueued = false;
-    for (var fileName in updateStatus.newFileList) {
+    updateStatus.newFileList.files.forEach(function(fileName, index) {
         updateStatus.actionStarted(index == fileCount-1);
-        fs.rename(fileName, fileName + oldFileSuffix, updateStatus.actionCompleted);
-    }
+        fs.rename(__dirname + "/" + fileName + newFileSuffix, __dirname + "/" + fileName, updateStatus.actionCompleted);
+    });
 }
 function deleteOldFiles() {
-    mainWindow.webContents.executeJavascript("slideInPopup('renamed new files', 2000)");
+    mainWindow.webContents.executeJavaScript("slideInPopup('renamed new files', 2000)");
 
+    var fileCount = updateStatus.oldFileList.files.length;
     updateStatus.nextAction = completeUpdate;
     updateStatus.filesQueued = 0;
     updateStatus.allFilesQueued = false;
     updateStatus.oldFileList.files.forEach(function(fileName, index) {
         updateStatus.actionStarted(fileName, index == fileCount-1);
-        fs.delete(fileName + oldFileSuffix, updateStatus.actionCompleted);
+        fs.unlink(__dirname + "/" + fileName + oldFileSuffix, updateStatus.actionCompleted);
     });
 }
 function completeUpdate() { // alert user to restart app
-    mainWindow.webContents.executeJavascript("updateFinished()");
+    console.log("done updating");
+    mainWindow.webContents.executeJavaScript("updateFinished()");
 }
 
 exports.beginUpdateInMain = beginUpdateInMain; // can be called from renderer javascript
