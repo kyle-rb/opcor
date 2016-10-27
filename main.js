@@ -2,7 +2,6 @@ const electron = require("electron");
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
 const fs = require("fs");
-const http = require("http");
 const request = require("request");
 
 let mainWindow;
@@ -79,6 +78,8 @@ function getFile(filePath, callback) { // gets a string of the data at the speci
     });
 }
 function loadNewFiles(fileListPath, newFileListString) {
+    mainWindow.webContents.executeJavascript("slideInPopup('downloaded new file list', 2000)");
+
     updateStatus.newFileList = JSON.parse(newFileListString);
     var fileCount = updateStatus.newFileList.files.length;
     updateStatus.nextAction = renameOldFiles;
@@ -96,8 +97,8 @@ function saveFile(fileName, fileContents) {
     console.log(fileName + " being written");
 }
 function renameOldFiles() {
-    console.log("all files saved");
-    return; // remove this
+    mainWindow.webContents.executeJavascript("slideInPopup('downloaded new files', 2000)");
+
     updateStatus.nextAction = saveNewFiles;
     updateStatus.filesQueued = 0;
     updateStatus.allFilesQueued = false;
@@ -107,6 +108,8 @@ function renameOldFiles() {
     });
 }
 function renameNewFiles() {
+    mainWindow.webContents.executeJavascript("slideInPopup('renamed old files', 2000)");
+
     updateStatus.nextAction = deleteOldFiles;
     updateStatus.filesQueued = 0;
     updateStatus.allFilesQueued = false;
@@ -116,6 +119,8 @@ function renameNewFiles() {
     }
 }
 function deleteOldFiles() {
+    mainWindow.webContents.executeJavascript("slideInPopup('renamed new files', 2000)");
+
     updateStatus.nextAction = completeUpdate;
     updateStatus.filesQueued = 0;
     updateStatus.allFilesQueued = false;

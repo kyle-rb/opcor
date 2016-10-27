@@ -1,4 +1,4 @@
 {
     "version": "1.0.0",
-    "message": "click <a href='' onclick='performUpdate()'>here</a> to update"
+    "message": "click <a href='#' onclick='performUpdate()'>here</a> to update"
 }

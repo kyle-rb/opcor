@@ -1,14 +1,14 @@
 {
     "name": "Opcor",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "An application that lets you search for videos.",
     "main": "main.js",
     "scripts": {
-	"start": "electron ."
+        "start": "electron ."
     },
     "repository": {
-	"type": "none",
-	"url": "//"
+        "type": "git",
+        "url": "https://github.com/kyle-rb/opcor"
     },
     "keywords": [
         "opcor",
@@ -17,10 +17,13 @@
     "author": "kyle-rb",
     "license": "Beerware",
     "bugs": {
-	"url": ""
+        "url": ""
     },
     "homepage": "https://github.com/kyle-rb/opcor",
+    "dependencies": {
+        "request": "2.76.0"
+    },
     "devDependencies": {
-	"electron": "^1.3.5"
+        "electron": "^1.3.5"
     }
 }
