@@ -22,7 +22,7 @@ const iframeEnd = "</iframe>"; // iframe end tag
 const urlStart = "http:"; // start of the iframe's source
 const put9UrlStart = "http://putlocker9.com/watch"; // to filter out other links
 const urlEnd = movieTitleEnd; // (double quote) end of the iframe's source
-const vodSectionStart = ";Vodlocker.com"; // vodlocker label
+const vodSectionStart = "odlocker.com"; // vodlocker label (can be uppercase or lowercase)
 const vodSectionEnd = "target="; // stop after href
 const vodLinkStart = "?version="; // start of href link
 const vodLinkEnd = movieTitleEnd; // (double quote) end of link
@@ -50,13 +50,11 @@ function searchMedia(queryString) {
     var resultCount = (resultsSection.match(/aaa_item/g)||[]).length; // there are more urls than results
     var allUrls = getSubstrings(resultsSection, put9UrlStart, urlEnd, resultCount * 2);
     var pageUrls = [];
-    console.log(allUrls, allUrls.length);
     allUrls.forEach(function(url, index){ if (index % 2 == 0) { pageUrls.push(url) } }); // 2 links per item; only take 1
     var allTitles = getSubstrings(resultsSection, movieTitleStart, movieTitleEnd, resultCount * 2);
     var pageTitles = [];
     allTitles.forEach(function(str,i){if(i%2 == 0){pageTitles.push(str.substring(7,str.length))}});
     // have to filter out other urls/titles and get rid of the 'title="' on each title
-    console.log(pageUrls);
     
     var resultList = "are any of these the thing you wanted to watch?<br/><br/>";
     for (var i = 0; i < resultCount; i++) {
@@ -80,7 +78,7 @@ function movieOrShow(pageUrl, mediaTitle) {
         listEpisodes(pageSource, pageUrl, mediaTitle);
     }
     else {
-        getMp4StreamLinks(pageSource, mediaTitle); // not a tv show; we don't need to list episodes
+        getMp4StreamLinks(pageSource, pageUrl, mediaTitle); // not a tv show; we don't need to list episodes
     }
 }
 
@@ -130,7 +128,7 @@ function getMp4StreamLinks(pageSource, pageUrl, mediaTitle) { // takes a search 
     var streamUrlList, labelList;
     [streamUrlList, labelList] = getLinkFromPage(embeddedUrl); // first call using embedded link
 
-    var vodLinkCount = (pageSource.match(/;Vodlocker/g)||[]).length;
+    var vodLinkCount = (pageSource.match(/;Vodlocker/g)||[]).length + (pageSource.match(/;vodlocker/g)||[]).length;
     var vodlockerSections = getSubstrings(pageSource, vodSectionStart, vodSectionEnd, vodLinkCount);
     var vodLink = "";
     var currentStream, currentLabel;
@@ -141,21 +139,19 @@ function getMp4StreamLinks(pageSource, pageUrl, mediaTitle) { // takes a search 
         [currentStream, currentLabel] = getLinkFromPage(embeddedUrl);
         streamUrlList.push.apply(streamUrlList, currentStream); // basically works like in place concat
         labelList.push.apply(labelList, currentLabel);
-        console.log("current links: " + currentStream + " - " + currentLabel);
+        /*console.log("current links: " + currentStream + " - " + currentLabel);
         console.log("total links: " + streamUrlList + " - " + labelList);
-        console.log("sections:" + vodlockerSections.length + " " + vodLinkCount);
+        console.log("sections:" + vodlockerSections.length + " " + vodLinkCount);*/
     }
 
-    console.log(pageUrl, vodLinkCount, streamUrlList, labelList);
     for (var i = 0; i < streamUrlList.length; i++) {
         if (!streamUrlList[i]) { // if a link is empty, remove it and its associated label
             streamUrlList.splice(i, 1);
             labelList.splice(i, 1);
         }
     }
-    console.log(streamUrlList, labelList);
 
-    var linkList = unescape(mediaTitle); // start with movie/episode title
+    var linkList = unescape(mediaTitle + "test"); // start with movie/episode title
     if (!streamUrlList[0]) { // the embed link and all vodlocker links are broken/missing
         linkList = "crap<br/>looks like the link on this page is broken"
     }

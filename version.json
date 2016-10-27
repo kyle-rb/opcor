@@ -1,4 +1,4 @@
 {
-    "version": "1.0.1",
-    "message": "the new version is almost done, I swear. in like 2 days there will be a download link here"
+    "version": "1.0.0",
+    "message": "click <a href='' onclick='performUpdate()'>here</a> to update"
 }

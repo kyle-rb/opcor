@@ -103,7 +103,7 @@ function renameOldFiles() {
     updateStatus.allFilesQueued = false;
     updateStatus.oldFileList.files.forEach(function(fileName, index) {
         updateStatus.actionStarted(index == fileCount-1);
-        //fs.rename(fileName, fileName + oldFileSuffix, updateStatus.actionCompleted);
+        fs.rename(fileName, fileName + oldFileSuffix, updateStatus.actionCompleted);
     });
 }
 function renameNewFiles() {
@@ -112,7 +112,7 @@ function renameNewFiles() {
     updateStatus.allFilesQueued = false;
     for (var fileName in updateStatus.newFileList) {
         updateStatus.actionStarted(index == fileCount-1);
-        //fs.rename(fileName, fileName + oldFileSuffix, updateStatus.actionCompleted);
+        fs.rename(fileName, fileName + oldFileSuffix, updateStatus.actionCompleted);
     }
 }
 function deleteOldFiles() {
@@ -121,7 +121,7 @@ function deleteOldFiles() {
     updateStatus.allFilesQueued = false;
     updateStatus.oldFileList.files.forEach(function(fileName, index) {
         updateStatus.actionStarted(fileName, index == fileCount-1);
-        //fs.delete(fileName + oldFileSuffix, updateStatus.actionCompleted);
+        fs.delete(fileName + oldFileSuffix, updateStatus.actionCompleted);
     });
 }
 function completeUpdate() { // alert user to restart app
