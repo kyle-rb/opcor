@@ -69,8 +69,15 @@ function beginUpdateInMain() {
     getFile(fileLocation + "filelist.json", loadNewFiles);
 }
 function getFile(filePath, callback) { // gets a string of the data at the specified url passed in
+    var fileEncoding;
+    if (filePath.includes("png") || filePath.includes("jpg") || filePath.includes("icns") || filePath.includes("ttf")) {
+        fileEncoding = null;
+    }
+    else {
+        fileEncoding = "utf8";
+    }
     var result = "";
-    var req = request(fileLocation + filePath, function(error, response, body) {
+    var req = request({url: fileLocation + filePath, encoding: fileEncoding}, function(error, response, body) {
         if (!error && response.statusCode == 200) {
             callback(filePath, body);
         }
@@ -94,7 +101,14 @@ function loadNewFiles(fileListPath, newFileListString) {
     });
 }
 function saveFile(fileName, fileContents) {
-    fs.writeFile(__dirname + "/" + fileName + newFileSuffix, fileContents, updateStatus.actionCompleted);
+    var fileEncoding;
+    if (fileName.includes("png") || fileName.includes("jpg") || fileName.includes("icns") || fileName.includes("ttf")) {
+        fileEncoding = "binary";
+    }
+    else {
+        fileEncoding = "utf8";
+    }
+    fs.writeFile(__dirname + "/" + fileName + newFileSuffix, fileContents, fileEncoding, updateStatus.actionCompleted);
 }
 function renameOldFiles() {
     mainWindow.webContents.executeJavaScript("slideInPopup('downloaded new files', 2000)");
