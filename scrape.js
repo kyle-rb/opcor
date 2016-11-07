@@ -155,6 +155,10 @@ function copyText(copyText) {
     slideInPopup("link copied to clipboard", 2000); // show for 2 seconds
 }
 
+function copyUrl(url) {
+    // no-op, so no errors are thrown (hopefully)
+}
+
 function showBookmarks() {
     bookmarkBox = document.getElementById("bookmark-popup");
     bookmarkBox.innerHTML = "test text";
