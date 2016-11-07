@@ -1,4 +1,4 @@
 {
     "version": "1.0.2",
-    "message": "<span bgcolor='#e0e8ec'>the last update had issues because the new backend sucks. this update switches back to the old one (which is back up) so it's much better. <a href='#' onclick=\"performUpdate()\">click here to update</a>. if that doesn't work, <a href='#' onclick='copyText(\"https://www.dropbox.com/sh/mba9v5cise41cko/AABOXazb56F9Mof4A_wj3L7fa?dl=0\");copyUrl(\"https://www.dropbox.com/sh/mba9v5cise41cko/AABOXazb56F9Mof4A_wj3L7fa?dl=0\")'>click here to download a fresh copy</a></span>"
+    "message": "<div bgcolor='#e0e8ec'>the last update had issues because the new backend sucks. this update switches back to the old one (which is back up) so it's much better. <a href='#' onclick=\"performUpdate()\">click here to update</a>. if that doesn't work, <a href='#' onclick='copyText(\"https://www.dropbox.com/sh/mba9v5cise41cko/AABOXazb56F9Mof4A_wj3L7fa?dl=0\");copyUrl(\"https://www.dropbox.com/sh/mba9v5cise41cko/AABOXazb56F9Mof4A_wj3L7fa?dl=0\")'>click here to download a fresh copy</a></div>"
 }
