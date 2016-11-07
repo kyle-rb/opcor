@@ -219,7 +219,7 @@ function checkForUpdate() {
 }
 
 function performUpdate() {
-    console.log("update started");
+    console.log("update  started");
     beginUpdateInMain();
 }
 function updateFinished() {
