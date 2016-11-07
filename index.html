@@ -4,6 +4,7 @@
   <title>Opcor</title>
   <link rel="stylesheet" href="shiny.css">
   <script type="text/javascript" src="scrape.js"></script>
+  <script type="text/javascript" src="show.js"></script>
 </head>
 <body onload="checkForUpdate()">
   <button id="back-button" class="back" onclick="goBack()"><div class="arr">&#8623;</div></button>
@@ -33,12 +34,12 @@
   </div>
   <div id="video-container" class="scale-box">
     <div class="content-box">
-      <video id="video-embed" controls>
+      <video id="video-embed" controls autoplay>
         <source id="video-source" src="" type="video/mp4">
       </video>
     </div>
   </div>
   <div id="select-box" class="invisible-box"></div>
-  <div class="bottom">   opcor.   <a href="https://twitter.com/kyleryanboyle" target="_blank" title="twitter (note: i don't actually ever tweet)">by me.</a>   <a href="https://github.com/kyle-rb/opcor" target="_blank" title="github">i made this one.</a>   all videos are hosted by someone other than me.   report bugs or whatever <a href="mailto:kyleryanboyle@gmail.com" title="kyleryanboyle@gmail.com" onclick="copyText('kyleryanboyle@gmail.com')">here</a>.</div>
+  <div class="bottom">   opcor.   <a href="#" title="twitter (note: i don't actually ever tweet)" onclick="copyText('https://twitter.com/kyleryanboyle')">by me.</a>   <a href="#" title="github" onclick="copyText('https://github.com/kyle-rb/opcor')">i made this one.</a>   all videos are hosted by someone other than me.   report bugs or whatever <a href="mailto:kyleryanboyle@gmail.com" title="kyleryanboyle@gmail.com" onclick="copyText('kyleryanboyle@gmail.com')">here</a>.</div>
 </body>
 </html>
