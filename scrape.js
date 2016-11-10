@@ -47,9 +47,11 @@ function searchMedia(queryString) {
     var resultCount = (resultsSection.match(/%"/g)||[]).length; // there are more urls than results
     var allUrls = getSubstrings(resultsSection, urlStart, urlEnd, resultCount * 3);
     var pageUrls = [];
-    allUrls.forEach(function(url, index){ if (index % 2 == 0) { pageUrls.push(url) } });
+    allUrls.forEach(function(url, index){ if (index % 3 == 0) { pageUrls.push(url) } });
     var allTitles = getSubstrings(resultsSection, movieTitleStart, movieTitleEnd, resultCount * 2);
     var pageTitles = [];
+    console.log("all urls: ", allUrls);
+    console.log("actual urls: ", pageUrls);
     allTitles.forEach(function(str,i){if(i%2 == 0){pageTitles.push(str.substring(7,str.length))}});
     // have to filter out other urls/titles and get rid of the 'title="' on each title
     
