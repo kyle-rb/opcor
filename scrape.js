@@ -1,6 +1,8 @@
 // this is necessary to be able to call node functions from here
 var electron = require('electron');
 var beginUpdateInMain = electron.remote.require('./main').beginUpdateInMain;
+var recordKeyPress = electron.remote.require('./main').keyPressed;
+document.addEventListener("keydown", function(event) { recordKeyPress(event.key) });
 
 // global variables - hold variables that need to be remembered between functions
 var pageHistory = [];
@@ -37,7 +39,7 @@ function searchMedia(queryString) {
     //document.getElementById("bookmark-list-button").style.visibility = "visible"; // show bookmark button
     var queryUrl = encodeURI(queryString.trim().replace(/\s+/g, ' ').toLowerCase());
     // may need to replace single quotes individually, we'll see if it works without
-    var searchUrl = "http://putlockers.ch/search/search.php?q=" + queryUrl;
+    var searchUrl = "http://putlocker.is/search/search.php?q=" + queryUrl;
     var searchPage = getPage(searchUrl);
     if (searchPage.includes("Top Movies")) { // case where no results are returned
         document.getElementById("results").innerHTML = "couldn't find shit";
@@ -125,7 +127,7 @@ function getMp4StreamLinks(pageUrl, mediaTitle) { // takes a search string; retu
 
     var linkList = unescape(mediaTitle);
     for (var i = 0; i < urlCount; i++) {
-        linkList += `<div class="result-box" style="cursor:default;animation-delay:${((i/10)-0.3)}s;">${qualityLabels[i]}: <button class="embed" onclick="embedVideo('${streamUrls[i]}');" title="embed this video in the page"></button><a href="${streamUrls[i]}" target="_blank"><button class="window" title="pop-out this video into a new window"></button></a><a href="${streamUrls[i]}" download><button class="download" title="download this video"></button></a><button class="copy" onclick="copyText('${streamUrls[i]}');" title="copy a link to this video to your clipboard"></button></div>`;
+        linkList += `<div class="result-box" style="cursor:default;animation-delay:${((i/10)-0.3)}s;">${qualityLabels[i]}: <button class="embed" onclick="embedVideo('${streamUrls[i]}');" title="embed this video in the page"></button><a href="window.html#${streamUrls[i]}" target="_blank"><button class="window" title="pop-out this video into a new window"></button></a><button class="copy" onclick="copyText('${streamUrls[i]}');" title="copy a link to this video to your clipboard"></button></div>`;
     }
     if (pageHistory.length == 2) { // we're going from episode list to stream links
         pageHistory[1].scrollPos = document.body.scrollTop; // save the scroll position

@@ -3,7 +3,12 @@
     src: url('Futura_ICG.ttf') format('truetype');
 }
 
+html {
+    height: 100%;
+}
 body {
+    height: 100%;
+    margin: 0px;
     font-family: "futura", "futura-dl";
     font-size: 16pt;
     color: #c80058;
@@ -129,7 +134,7 @@ a, a:visited, a:link {
 #video-fill {
     position: absolute;
     width: 100%;
-    left: 0px;
+    height: 100%;
 }
 input.search {
     position: relative;
@@ -158,7 +163,7 @@ button.search {
     border-width: 3px;
     border-color: #c01050;
     border-radius: 6px;
-    font-family: "lucida console", monaco, monospace;
+    font-family: "lucida console", "monaco", "monospace";
     font-size: 32px;
     color: #ffffff;
     background-color: #c80058;
@@ -179,6 +184,7 @@ button.bookmark-list {
 }
 button.back {
     position: absolute;
+    top: 8px;
     left: 8px;
     height: 40px;
     width: 60px;

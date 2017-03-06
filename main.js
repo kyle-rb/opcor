@@ -30,14 +30,16 @@ app.on("activate", function() {
     }
 });
 
-app.on("keydown", function(key) {
-    if (key.ctrlKey && key.keyCode == 77) { // ctrl m for minimize current window
-        mainWindow.getFocusedWindow.minimize();
+function keyPressed(event) {
+    if ((event.ctrlKey || event.metaKey) && !event.shiftKey) { // control or command/windows but not shift
+        if (event.key == "m" || event.key == "M") { // m or M (due to capslock)
+            mainWindow.getFocusedWindow.minimize(); // minimize current window
+        }
+        else if (event.key == "w" || event.key == "W") { // w or W (due to capslock)
+            mainWindow.getFocusedWindow.close(); // close current window
+        }
     }
-    else if (key.ctrlKey && key.keyCode == 87) { // ctrl w for close current window
-        mainWindow.getFocusedWindow.close();
-    }
-});
+}
 
 // UPDATE FUNCTIONS
 /*
@@ -151,4 +153,6 @@ function completeUpdate() { // alert user to restart app
     mainWindow.webContents.executeJavaScript("updateFinished()");
 }
 
-exports.beginUpdateInMain = beginUpdateInMain; // can be called from renderer javascript
+// can be called from renderer javascript
+exports.beginUpdateInMain = beginUpdateInMain;
+exports.keyPressed = keyPressed;
