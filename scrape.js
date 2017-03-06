@@ -1,8 +1,10 @@
 // this is necessary to be able to call node functions from here
 var electron = require('electron');
 var beginUpdateInMain = electron.remote.require('./main').beginUpdateInMain;
-var recordKeyPress = electron.remote.require('./main').keyPressed;
-document.addEventListener("keydown", function(event) { recordKeyPress(event.key) });
+var keyPressed = electron.remote.require('./main').keyPressed;
+document.addEventListener("keydown", function(event) {
+    keyPressed(event.key, event.ctrlKey, event.metaKey, event.shiftKey);
+});
 
 // global variables - hold variables that need to be remembered between functions
 var pageHistory = [];
@@ -52,8 +54,8 @@ function searchMedia(queryString) {
     allUrls.forEach(function(url, index){ if (index % 3 == 0) { pageUrls.push(url) } });
     var allTitles = getSubstrings(resultsSection, movieTitleStart, movieTitleEnd, resultCount * 2);
     var pageTitles = [];
-    console.log("all urls: ", allUrls);
-    console.log("actual urls: ", pageUrls);
+    //console.log("all urls: ", allUrls);
+    //console.log("actual urls: ", pageUrls);
     allTitles.forEach(function(str,i){if(i%2 == 0){pageTitles.push(str.substring(7,str.length))}});
     // have to filter out other urls/titles and get rid of the 'title="' on each title
     

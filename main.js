@@ -10,7 +10,7 @@ function createWindow() {
     mainWindow = new BrowserWindow({width: 800, height: 600, icon:"img/opcor-icon.png"});
     mainWindow.loadURL("file://" + __dirname + "/index.html");
     mainWindow.on("closed", function() {
-	mainWindow = null; // change this if we switch to multiple windows
+        mainWindow = null; // change this if we switch to multiple windows
     });
 }
 
@@ -30,14 +30,17 @@ app.on("activate", function() {
     }
 });
 
-function keyPressed(event) {
-    if ((event.ctrlKey || event.metaKey) && !event.shiftKey) { // control or command/windows but not shift
-        if (event.key == "m" || event.key == "M") { // m or M (due to capslock)
-            mainWindow.getFocusedWindow.minimize(); // minimize current window
+function keyPressed(key, ctrlKey, metaKey, shiftKey) { // doesn't like when I pass the whole object
+    if ((ctrlKey || metaKey) && !shiftKey) { // control or command/windows but not shift
+        if (key == "m" || key == "M") { // m or M (due to capslock)
+            BrowserWindow.getFocusedWindow().minimize(); // minimize current window
         }
-        else if (event.key == "w" || event.key == "W") { // w or W (due to capslock)
-            mainWindow.getFocusedWindow.close(); // close current window
+        else if (key == "w" || key == "W") { // w or W (due to capslock)
+            BrowserWindow.getFocusedWindow().close(); // close current window
         }
+    }
+    else {
+        // no-op; normal button press
     }
 }
 
@@ -49,7 +52,7 @@ function keyPressed(event) {
     3. For each file, listed in the new filelist, download and save it with its name + "~NEW"
     4. When we've downloaded and saved all files, iterate though the renamed old ones and delete them.
     5. Rename all the new ones to their actualy filename.
-    5. Display a message to the user that the update is complete, and to restart the app for the changes to take effect.
+    6. Display a message to the user that the update is complete, and to restart the app for the changes to take effect.
 */
 const fileLocation = "https://raw.githubusercontent.com/kyle-rb/opcor/master/";
 const newFileSuffix = "~NEW";
