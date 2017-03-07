@@ -41,7 +41,7 @@ function searchMedia(queryString) {
     //document.getElementById("bookmark-list-button").style.visibility = "visible"; // show bookmark button
     var queryUrl = encodeURI(queryString.trim().replace(/\s+/g, ' ').toLowerCase());
     // may need to replace single quotes individually, we'll see if it works without
-    var searchUrl = "http://putlocker.is/search/search.php?q=" + queryUrl;
+    var searchUrl = "http://putlockertv.is/search/search.php?q=" + queryUrl;
     var searchPage = getPage(searchUrl);
     if (searchPage.includes("Top Movies")) { // case where no results are returned
         document.getElementById("results").innerHTML = "couldn't find shit";
@@ -206,7 +206,13 @@ function bookmarkShow() {
 
 function checkForUpdate() {
     var currentVersionFile = JSON.parse(getPage("./version.json"));
-    var newestVersionFile = JSON.parse(getPage("https://raw.githubusercontent.com/kyle-rb/opcor/master/version.json"));
+    var newestVersionFile;
+    try {
+      newestVersionFile = JSON.parse(getPage("https://raw.githubusercontent.com/kyle-rb/opcor/master/version.json"));
+    }
+    catch (e) {
+      newestVersionFile = JSON.parse(getPage("http://palossand.com/version.json"));
+    }
 
     var updateNecessary = false;
     var currentVersion = currentVersionFile.version.split('.');
@@ -224,7 +230,7 @@ function checkForUpdate() {
     }
     if (updateNecessary) {
         var popupText = updateMessage;
-        slideInPopup(popupText, 8000); // show for 8 seconds
+        slideInPopup(popupText, 20000); // show for 8 seconds
     }
 }
 

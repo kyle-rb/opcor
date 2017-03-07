@@ -1,4 +1,4 @@
 {
-    "version": "1.0.4",
+    "version": "1.0.5",
     "message": "<div style='background-color:#e0e8ec'>the url got switched again, so we're switching back. <a href='#' onclick=\"performUpdate()\">click here to update</a>. or click a link at the bottom to contact me for a fresh download</div>"
 }
