@@ -41,7 +41,7 @@ a, a:visited, a:link {
     white-space: pre-wrap;
 }
 .scale-box { /* scales incrementally relative to the screen size; centered in container */
-    width: 96%;
+    width: 94%;
     margin-left: auto;
     margin-right: auto;
     margin-bottom: 32px;
@@ -110,9 +110,6 @@ a, a:visited, a:link {
     left: 0px;
     font-size: 2pt; /* can't be display:none or visibility:hidden because you can't select those */
 }
-.arr { /* box to rotate arrow inside button */
-    transform: translate(3px, -22px) rotate(90deg);
-}
 .image-mask { /* mask for rolling image */
     position: relative;
     display: inline-block;
@@ -136,6 +133,7 @@ a, a:visited, a:link {
     width: 100%;
     height: 100%;
 }
+/* input box */
 input.search {
     position: relative;
     width: 400px;
@@ -148,13 +146,31 @@ input.search {
 input.search:focus {
     outline-color: #b01030;
 }
+/* buttons */
 button {
     cursor: pointer;
 }
 button:focus {
     outline-style: none;
 }
-button.search {
+button:active {
+    border-style: solid;
+    border-color: #c80058;
+}
+button:hover:after { /* hover text */
+    position: absolute;
+    top: -20px;
+    padding: 2px 4px 0px 4px;
+    border-radius: 2px;
+    font-family: "futura", "futura-dl";
+    font-size: 14pt;
+    color: #c80059;
+    background-color: #f0f8fc;
+    opacity: .9;
+    white-space: nowrap;
+    z-index: 1;
+}
+button.search { /* button to initiate search */
     position: relative;
     top: 3px;
     height: 40px;
@@ -168,7 +184,7 @@ button.search {
     color: #ffffff;
     background-color: #c80058;
 }
-button.bookmark-list {
+button.bookmark-list { /* open the list of bookmarks (which is a feature I have yet to add) */
     position: absolute;
     left: 8px;
     height: 40px;
@@ -182,7 +198,7 @@ button.bookmark-list {
     background-size: 32px;
     visibility: visible;
 }
-button.back {
+button.back { /* go to previous page */
     position: absolute;
     top: 8px;
     left: 8px;
@@ -197,11 +213,7 @@ button.back {
     background-color: #c80058;
     visibility: hidden;
 }
-button.search:active, button.bookmark-list:active, button.back:active {
-    border-style: solid;
-    border-color: #c80058;
-}
-button.embed, button.window, button.download, button.copy {
+button.embed, button.window, button.download, button.copy { /* 4 stream buttons in a row */
     position: relative;
     height: 30px;
     width: 30px;
@@ -212,28 +224,24 @@ button.embed, button.window, button.download, button.copy {
     color: #e0e8ec;
     background-color: #c80058;
 }
-button.embed {
-    background-image: url("img/embed.png");
-}
-button.window {
-    background-image: url("img/open-in-new.png");
-}
-button.download {
-    background-image: url("img/download.png");
-} 
-button.copy {
-    background-image: url("img/copy-to-clipboard.png");
-}
-button.embed:active, button.window:active, button.download:active, button.copy:active {
-    border-style: solid;
-    border-color: #c80058;
+button.embed { background-image: url("img/embed.png"); }
+button.embed:hover:after { content: "embed this video in the page"; }
+button.window { background-image: url("img/open-in-new.png"); }
+button.window:hover:after { content: "pop-out this video into a new window"; }
+button.download { background-image: url("img/download.png"); }
+button.download:hover:after { content: "download this video"; }
+button.copy { background-image: url("img/copy-to-clipboard.png"); }
+button.copy:hover:after { content: "copy a link to this video to your clipboard"; }
+.arr { /* box to rotate arrow inside button */
+    transform: translate(3px, -22px) rotate(90deg);
 }
 img.logo { /* contains logo; expands to width of container */
     float: left;
     width: 270px;
 }
 
-@media  screen and (max-device-width: 4in) { /* smartphone max width = ~4in */
+/* smartphone specific styles; basically deprecated */
+@media screen and (max-device-width: 4in) { /* smartphone max width = ~4in */
     body { font-size: 3em; }
     .scale-box { width: 96%; }
     .content-box { text-align: center; }
@@ -241,22 +249,17 @@ img.logo { /* contains logo; expands to width of container */
     input.movie { width: 80%; font-size: 24pt; }
     button.flat { padding-top: 0px; }
 }
+/* center things when the window gets small   */
 @media screen and (min-device-width: 4in) and (max-width: 660px) {
     .content-box { text-align: center; }
     input.search { width: 80%; right: 8px; }
 }
+/* for window resizes */
 @media screen and (min-device-width: 4in) and (min-width: 768px) { .scale-box { width: 720px; } }
 @media screen and (min-device-width: 4in) and (min-width: 1024px) { .scale-box { width: 976px; } }
 @media screen and (min-device-width: 4in) and (min-width: 1280px) { .scale-box { width: 1232px; } }
 
-/* changed this to a transition
-@keyframes slide-in {
-    0% {top: -120px;}
-    15% {top: 20px;}
-    90% {top: 20px;}
-    100% {top: -120px;}
-}
-*/
+/* result boxes come in from the right */
 @keyframes bounce-in {
     0% {left: 720px;}
     28% {left: -18px;}
@@ -265,6 +268,7 @@ img.logo { /* contains logo; expands to width of container */
     76% {left: 15px;}
     100% {left: 6px;}
 }
+/* logo scrolls right continuously */
 @keyframes roll-logo {
     from {left: -270px;}
     to {left: 0px;}
@@ -279,5 +283,6 @@ COLORS:
   light-red: #c01050 -> button outline
   dark-red:  #401020 -> input text
   off-white: #e0e8ec -> content box background
+  white:     #f0f8fc -> result box background
   blue:      #4080f0 -> nothing right now
 */

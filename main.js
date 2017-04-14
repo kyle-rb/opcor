@@ -54,16 +54,22 @@ function keyPressed(key, ctrlKey, metaKey, shiftKey) { // doesn't like when I pa
     5. Rename all the new ones to their actualy filename.
     6. Display a message to the user that the update is complete, and to restart the app for the changes to take effect.
 */
-const fileLocation = "https://raw.githubusercontent.com/kyle-rb/opcor/master/";
+const fileLocation = "http://palossand.com/opcor/";
 const newFileSuffix = "~NEW";
 const oldFileSuffix = "~OLD";
 
-var updateStatus = { // this is lightweight and a singleton so I'm just going to keep it around and not bother with creation/deletion
+var updateStatus = {
     oldFileList: {}, newFileList: {}, // object with list of files named 'files'
-    filesQueued: 0, allFilesQueued: false, // are all files queued to be loaded/renamed/saved/deleted?
+    filesQueued: 0, allFilesQueued: false, // all files queued to be loaded/renamed/saved/deleted?
     nextAction: function() {},
-    actionStarted: function(isLastFile) { ++updateStatus.filesQueued; updateStatus.allFilesQueued = isLastFile; },
-    actionCompleted: function() { if ((--updateStatus.filesQueued === 0) && updateStatus.allFilesQueued) { updateStatus.nextAction(); }}
+    actionStarted: function(isLastFile) {
+        ++updateStatus.filesQueued; updateStatus.allFilesQueued = isLastFile;
+    },
+    actionCompleted: function() {
+        if ((--updateStatus.filesQueued === 0) && updateStatus.allFilesQueued) {
+            updateStatus.nextAction();
+        }
+    }
 }
 
 function beginUpdateInMain() {

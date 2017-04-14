@@ -1,3 +1,3 @@
 {
-    "files": ["main.js", "index.html", "window.html", "shiny.css", "scrape.js", "show.js", "Futura_ICG.ttf", "package.json", "version.json", "filelist.json", "license.txt", "README.md", "img/bookmark-border.png", "img/bookmark-filled.png", "img/bookmark-list.png", "img/copy-to-clipboard.png", "img/opcor-icon.png", "img/download.png", "img/embed.png", "img/opcor-icon.png", "img/opcor-icon.icns", "img/opcor-logo.png", "img/open-in-new.png"]
+    "files": ["main.js", "index.html", "window.html", "shiny.css", "scrape.js", "Futura_ICG.ttf", "package.json", "version.json", "filelist.json", "license.txt", "README.md", "img/bookmark-border.png", "img/bookmark-filled.png", "img/bookmark-list.png", "img/copy-to-clipboard.png", "img/opcor-icon.png", "img/download.png", "img/embed.png", "img/opcor-icon.png", "img/opcor-icon.icns", "img/opcor-logo.png", "img/open-in-new.png"]
 }

@@ -1,6 +1,6 @@
 {
     "name": "Opcor",
-    "version": "1.0.5",
+    "version": "1.1.0",
     "description": "An application that lets you search for videos.",
     "main": "main.js",
     "scripts": {
@@ -12,12 +12,12 @@
     },
     "keywords": [
         "opcor",
-	"stream"
+	    "stream"
     ],
     "author": "kyle-rb",
     "license": "Beerware",
     "bugs": {
-        "url": ""
+        "url": "https://github.com/kyle-rb/opcor/issues"
     },
     "homepage": "https://github.com/kyle-rb/opcor",
     "dependencies": {
