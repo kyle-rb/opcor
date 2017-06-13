@@ -77,7 +77,7 @@ function beginUpdateInMain() {
     mainWindow.webContents.executeJavaScript("slideInPopup('update started', 2000)");
     updateStatus.oldFileList = JSON.parse(fs.readFileSync(__dirname + "/filelist.json", "utf8"));
 
-    getFile(fileLocation + "filelist.json", loadNewFiles);
+    getFile("filelist.json", loadNewFiles);
 }
 function getFile(filePath, callback) { // gets a string of the data at the specified url passed in
     var fileEncoding;
@@ -93,6 +93,7 @@ function getFile(filePath, callback) { // gets a string of the data at the speci
             callback(filePath, body);
         }
         else {
+            console.log(fileLocation + filePath);
             console.log("FAILED WITH STATUS: " + response.statusCode);
             mainWindow.webContents.executeJavaScript("slideInPopup('file request failed', 2000)");
         }

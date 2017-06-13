@@ -225,6 +225,8 @@ function checkForUpdate() { // download the version file to see if there is an u
     let currentVersion = currentVersionFile.version.split('.');
     let newestVersion = newestVersionFile.version.split('.');
     let updateMessage = "";
+    console.log("current: " + currentVersion);
+    console.log("newest: " + newestVersion);
     for (var i = 0; i < currentVersion.length; i++) {
         if (currentVersion[i] < newestVersion[i]) {
             updateMessage = newestVersionFile.message;
