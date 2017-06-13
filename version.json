@@ -1,4 +1,4 @@
 {
-    "version": "1.1.0",
-    "message": "<div style='background-color:#e0e8ec'>putlocker is stupid now, so we're moving on to a new site with better streams. <a href='#' onclick=\"performUpdate()\">click here to update</a>. or click a link at the bottom to contact me for a fresh download</div>"
+    "version": "1.1.1",
+    "message": "<div style='background-color:#e0e8ec'>the site that Opcor gets data from switched video hosts, so this is a temporary update that makes it work again. a lot of shows aren't ported to the new host yet, but this is better than nothing <a href='#' onclick=\"performUpdate()\">click here to update</a>. or click a link at the bottom to contact me for a fresh download</div>"
 }

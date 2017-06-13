@@ -47,7 +47,6 @@ function retrieveSearchResults(searchString) { // searches for string and saves 
     encodedSearchString = encodedSearchString.replace(/[^A-Za-z0-9\s]/g,""); // remove special chars
     encodedSearchString = encodedSearchString.replace(/\s+/g, "+"); // replace spaces with pluses
     let searchUrl = "https://solarmoviez.to/search/" + encodedSearchString + ".html";
-    console.log(searchUrl);
     let resultsPage = getPage(searchUrl); // html of search results page
     if (resultsPage.includes("No result found.") || resultsPage.includes("Error 404")) {
         resultList = [];
@@ -87,6 +86,7 @@ function displaySearchResults() { // displays the contents of resultsList
     pageHistory.state = STATES.SEARCH;
     pageHistory.resultIndex = -1;
     pageHistory.episodeIndex = -1;
+    pageHistory.scrollPos = 0;
     episodeList = [];
     streamList = [];
 }
@@ -110,6 +110,10 @@ function retrieveEpisodeList(resultIndex) { // gets episodes of a tv show and sa
 
     episodeList = episodeList.reverse().slice(0, episodeCount / hostCount); // last fraction
 
+    // the code below will display a second set of episodes from a different host
+    // just comment out the above episodeList line and uncomment the below one
+    //episodeList = episodeList.reverse().slice(0,(episodeCount/hostCount)*2); // last 2 fractions
+
     let landingPage = getPage(resultList[resultIndex][1]);
     if (landingPage.indexOf(tvShowIndicator) != -1) { // if it's a tv show
         displayEpisodeList();
@@ -131,7 +135,12 @@ function displayEpisodeList() { // displays the contents of episodeList
 
     document.getElementById("results").innerHTML = displayText;
     
-    if (pageHistory.state = STATES.STREAMS) document.body.scrollTop = pageHistory.scrollPos;
+    if (pageHistory.state = STATES.STREAMS) {
+        document.body.scrollTop = pageHistory.scrollPos;
+    }
+    else {
+        document.body.scrollTop = 0;
+    }
     pageHistory.state = STATES.EPISODES;
     pageHistory.episodeIndex = -1;
     streamList = [];
@@ -154,7 +163,6 @@ function retrieveVideoStreams(episodeIndex) { // gets streams for a video and sa
     _x = "";
     _y = "";
     eval(tokenScript); // this sets _x and _y
-    console.log(tokenUrl);
     if (_x == undefined) console.log(tokenScript);
     let streamUrl = `https://solarmoviez.to/ajax/movie_sources/${episodeId}?x=${_x}&y=${_y}`;
     let streamPage = getPage(streamUrl);
@@ -166,13 +174,15 @@ function retrieveVideoStreams(episodeIndex) { // gets streams for a video and sa
         streamSources = [];
     }
 
+    // for googlevideo hosting, the sources had labels like 720p, 1080p, etc.
     for (let i = 0; i < streamSources.length; i++) {
-        console.log(streamSources[i].label, streamSources[i].label.length);
-        if (streamSources[i].label.length === 4) { // pad labels so the buttons line up
+        if (streamSources[i].label === undefined) { // if no label, give the source a number
+            streamSources[i].label = "Source " + (i + 1);
+        }
+        else if (streamSources[i].label.length === 4) { // pad labels so the buttons line up
             streamSources[i].label = "&nbsp;&nbsp;" + streamSources[i].label;
         }
         streamList[i] = [streamSources[i].label, streamSources[i].file];
-        console.log(streamSources[i].label, streamSources[i].label.length);
     }
 
     pageHistory.episodeIndex = episodeIndex;
@@ -240,10 +250,10 @@ function updateFinished() { // notifies the user that the update has finished
 }
 
 function goBack() { // go back one page (e.g. stream list to episode list)
-    if (pageHistory.state == STATES.EPISODES) {
+    if (pageHistory.state === STATES.EPISODES || pageHistory.episodeIndex === -1) {
         displaySearchResults();
     }
-    else if (pageHistory.state == STATES.STREAMS) {
+    else if (pageHistory.state === STATES.STREAMS) {
         displayEpisodeList();
     }
     else {
@@ -274,6 +284,7 @@ function copyText(stringToCopy) { // copies text to a user's clipboard and pops 
 
 // helper functions to simplify main functions
 function getPage(url) { // gets a string of the html of the page at the url passed in
+    console.log("started loading " + url);
     let startTime = Date.now();
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("GET", url, false); // false for synchronous request; UI is frozen anyway
@@ -340,7 +351,6 @@ function unescaee(str) {
 //
 // TODO:
 // add next and previous buttons (push navs to popped-out window?)
-//
-// someday, but not today, because I'm fucking burned out from porting to solarmovie
+// rewrite episode list parser
 //
 // * * * * * * * * * * * * * * * * * * * *

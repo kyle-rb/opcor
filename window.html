@@ -13,28 +13,30 @@
       video.play();
     }
     function onPress(event) {
-      switch (event.keyCode) {
-      case 32: // spacebar
-      case 75: // k
-        video.paused ? video.play() : video.pause(); // pause video
-        break;
-      case 77: // m
-        video.muted = !video.muted; // mute audio
-        break;
-      case 74: // j
-        video.currentTime -= 10; // skip back 10 seconds
-        break;
-      case 76: // l
-        video.currentTime += 10; // skip forward 10 seconds
-        break;
-      case 70:
-        if (!document.webkitFullscreenElement) {
-          video.webkitRequestFullscreen();
+      if (!(event.ctrlKey || event.metaKey || event.shiftKey)) {
+        switch (event.keyCode) {
+          case 32: // spacebar
+          case 75: // k
+            video.paused ? video.play() : video.pause(); // pause video
+            break;
+          case 77: // m
+            video.muted = !video.muted; // mute audio
+            break;
+          case 74: // j
+            video.currentTime -= 10; // skip back 10 seconds
+            break;
+          case 76: // l
+            video.currentTime += 10; // skip forward 10 seconds
+            break;
+          case 70:
+            if (!document.webkitFullscreenElement) {
+              video.webkitRequestFullscreen();
+            }
+            else {
+              document.webkitExitFullscreen();
+            }
+            break;
         }
-        else {
-          document.webkitExitFullscreen();
-        }
-        break;
       }
     }
   </script>

@@ -45,6 +45,7 @@ a, a:visited, a:link {
     margin-left: auto;
     margin-right: auto;
     margin-bottom: 32px;
+    transition: width 0.2s;
 }
 #video-container {
     visibility: hidden;
@@ -115,7 +116,7 @@ a, a:visited, a:link {
     display: inline-block;
     height: 90px;
     width: 270px;
-    overflow: hidden;;
+    overflow: hidden;
 }
 .image-roll { /* container for rolling image */
     position: absolute;
@@ -242,12 +243,11 @@ img.logo { /* contains logo; expands to width of container */
 
 /* smartphone specific styles; basically deprecated */
 @media screen and (max-device-width: 4in) { /* smartphone max width = ~4in */
-    body { font-size: 3em; }
     .scale-box { width: 96%; }
     .content-box { text-align: center; }
     .bottom { height: 32px; font-size: 16pt; }
     input.movie { width: 80%; font-size: 24pt; }
-    button.flat { padding-top: 0px; }
+    button.flat { padding-top: 0px; } 
 }
 /* center things when the window gets small   */
 @media screen and (min-device-width: 4in) and (max-width: 660px) {
