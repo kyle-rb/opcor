@@ -1,14 +1,41 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8">
   <title>Opcor</title>
   <link rel="stylesheet" href="shiny.css">
   <script type="text/javascript" src="scrape.js"></script>
 </head>
-<body onload="checkForUpdate()">
+<body onload="pageLoaded()">
   <button id="back-button" class="back" onclick="goBack()"><div class="arr">&#8623;</div></button>
+  <button id="settings-button" class="settings" onclick="toggleMenu()"></button>
   <div class="banner">
-    <div class="alert-spacer"><div id="alert-popup"></div></div>
+    <div class="alert-spacer">
+      <div id="alert-popup"></div>
+      <div id="menu-popup">
+        <div class="close-menu" onclick="slideOutMenu()">x</div>
+        <h2>Settings</h2>
+        <form>
+          <label>Host:</label>
+          <div>
+            <input id="option-main-vip" type="radio" name="host" value="main-vip">
+            <label for="option-main-vip">main host - googlevideo, so it's fast, but a lot of videos are missing</label>
+          </div>
+          <div>
+            <input id="option-alt-vip" type="radio" name="host" value="alt-vip">
+            <label for="option-alt-vip">alt main host - sometimes slow and unreliable, a lot missing</label>
+          </div>
+          <div>
+            <input id="option-openload" type="radio" name="host" value="openload">
+            <label for="option-openload">openload - many videos available, pretty fast; usually the best option</label>
+          </div>
+          <div>
+            <input id="option-backup" type="radio" name="host" value="backup">
+            <label for="option-backup">backup host - really slow, probably only use in a pinch</label>
+          </div>
+        </form>
+      </div>
+    </div>
     <div id="bookmark-popup"></div>
     <div class="image-mask">
       <div class="image-roll">

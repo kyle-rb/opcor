@@ -44,6 +44,17 @@ function keyPressed(key, ctrlKey, metaKey, shiftKey) { // doesn't like when I pa
     }
 }
 
+function writeFileFromFrontend(fileName, fileContents) {
+    var fileEncoding;
+    if (fileName.includes("png") || fileName.includes("jpg") || fileName.includes("icns") || fileName.includes("ttf")) {
+        fileEncoding = "binary";
+    }
+    else {
+        fileEncoding = "utf8";
+    }
+    fs.writeFileSync(__dirname + "/" + fileName, fileContents, fileEncoding);
+}
+
 // UPDATE FUNCTIONS
 /*
     On update:
@@ -166,3 +177,4 @@ function completeUpdate() { // alert user to restart app
 // can be called from renderer javascript
 exports.beginUpdateInMain = beginUpdateInMain;
 exports.keyPressed = keyPressed;
+exports.writeFileFromFrontend = writeFileFromFrontend;

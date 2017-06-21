@@ -5,6 +5,7 @@ let keyPressed = electron.remote.require("./main").keyPressed;
 document.addEventListener("keydown", function(event) {
     keyPressed(event.key, event.ctrlKey, event.metaKey, event.shiftKey);
 });
+let writeFileFromFrontend = electron.remote.require("./main").writeFileFromFrontend;
 
 // global constants - denote start and end points of various parts of the page structure
 const STATES = Object.freeze({ SEARCH: 0, EPISODES: 1, STREAMS: 2 }); // states for pageHistory
@@ -13,13 +14,19 @@ const resultUrlStart = "ml-item";
 const resultUrlEnd = '" class';
 const resultTitleStart = 'ml-mask" title="'; // might need to alter because newlines
 const resultTitleEnd = '"';
-//const resultSubUrlStart = "mod-btn-watch";
-//const resultSubUrlEnd = '" title';
 const tvShowIndicator = "<strong>Episode:</strong>";
+const episodeSectionStart = "<ul id="; // sections separating different hosts
+const episodeSectionEnd = "<\\/ul>"
 const episodeIdStart = 'id=\\"ep-';
 const episodeIdEnd = '\\"';
 const episodeTitleStart = "><\\/i>";
 const episodeTitleEnd = "     "; // five spaces should be enough
+const hostNameStart = '<a title=\\"';
+const hostNameEnd = '\\"';
+const olHexStart = '<span id="';
+const olHexEnd = "</";
+const olScriptStart = "var _0x9495="; // could change if they redo the obfuscation
+const olScriptEnd = "}});";
 
 // global variables - hold variables that need to be remembered between functions
 let pageHistory = { state: STATES.SEARCH,
@@ -28,11 +35,26 @@ let pageHistory = { state: STATES.SEARCH,
                     episodeIndex: -1,
                     scrollPos: 0
                   }; // stores information about the current location/state
+let settings = {}; // stores settings
 let resultList = []; // list of pairs containing show/movie names and urls
-let episodeList = []; // list of pairs containing episode names and urls
+let episodeList = []; // list of pairs containing episode names and ids
 let streamList = []; // list of pairs containing string quality identifiers and urls
 
 let _x, _y; // these catch the values for the script that gets 'eval'ed; they have to be up here
+let openloadHexString = "", openloadStreamUrl = ""; // input and output for Openload
+var z = 'hexid'; // fake id for Openload
+function jQuery(input) { // this fakes jQuery for Openload to work
+    if (input === document) {
+        return { "ready": function(callback) { callback(); } };
+    }
+    else if (input === "#streamurl") {
+        return { "text": function(val) { openloadStreamUrl = val; } };
+    }
+    else if (input === '#hexid') {
+        return { "text": function() { return openloadHexString; } };
+    }
+}
+var $ = jQuery;
 
 
 // functions to retrieve and display data
@@ -66,9 +88,10 @@ function retrieveSearchResults(searchString) { // searches for string and saves 
 
 function displaySearchResults() { // displays the contents of resultsList
     embedVideo(""); // hide the video container
-    document.getElementById("back-button").style.visibility = "hidden"; // show the back button
+    document.getElementById("back-button").style.visibility = "hidden"; // hide back button
+    document.getElementById("settings-button").style.visibility = "visible"; // show settings button
     let displayText;
-    if (resultList == []) {
+    if (resultList.length === 0) {
         displayText = "couldn't find shit";
     }
     else {
@@ -99,23 +122,48 @@ function retrieveEpisodeList(resultIndex) { // gets episodes of a tv show and sa
 
     episodeListUrl = "https://solarmoviez.to/ajax/v4_movie_episodes/" + movieId;
     episodesPage = getPage(episodeListUrl);
-    let episodeCount = (episodesPage.match(/data-index/g)||[]).length; // episodes from all hosts
     let hostCount = (episodesPage.match(/server-item/g)||[]).length; // number of different hosts
-    let idList = getSubstrings(episodesPage, episodeIdStart, episodeIdEnd, episodeCount);
-    let titleList = getSubstrings(episodesPage, episodeTitleStart, episodeTitleEnd, episodeCount);
-
-    for (let i = 0; i < episodeCount; i++) {
-        episodeList[i] = [titleList[i].slice(6), idList[i].slice(8)];
+    let sections = getSubstrings(episodesPage, episodeSectionStart, episodeSectionEnd, hostCount);
+    let idLists = [];
+    let titleLists = [];
+    let episodeCount = 0;
+    for (let i = 0; i < sections.length; i++) {
+        episodeCount = (sections[i].match(/data-index/g)||[]).length; // episodes from this host
+        idLists[i] = getSubstrings(sections[i], episodeIdStart, episodeIdEnd, episodeCount);
+        titleLists[i]= getSubstrings(sections[i], episodeTitleStart, episodeTitleEnd, episodeCount);
+        for (let j = 0; j < episodeCount; j++) {
+            titleLists[i][j] = titleLists[i][j].slice(6);
+            idLists[i][j] = idLists[i][j].slice(8);
+        }
+        titleLists[i].reverse(); // list of episodes is backwards
+        idLists[i].reverse();
+    }
+    let hostMatchFunctionObj = {
+        "main-vip": hostName => hostName === "VIP 1",
+        "alt-vip": hostName => hostName.slice(0, 3) === "VIP" && hostName !== "VIP 1",
+        "openload": hostName => hostName === "OPENLOAD",
+        "backup": hostName => hostName === "BACKUP"
+    }
+    let hostMatchFunction = hostMatchFunctionObj[settings.host]||hostMatchFunctionObj["openload"];
+    let hostList = getSubstrings(episodesPage, hostNameStart, hostNameEnd, hostCount);
+    hostList.reverse();
+    let hostIndex = -1;
+    for (let i = 0; i < hostList.length; i++) {
+        hostList[i] = hostList[i].slice(hostNameStart.length);
+        if (hostMatchFunction(hostList[i])) {
+            hostIndex = i;
+            break;
+        }
+    }
+    episodeList = [];
+    if (hostIndex !== -1) {
+        for (let i = 0; i < titleLists[hostIndex].length; i++) {
+            episodeList[i] = [titleLists[hostIndex][i], idLists[hostIndex][i]];
+        }
     }
 
-    episodeList = episodeList.reverse().slice(0, episodeCount / hostCount); // last fraction
-
-    // the code below will display a second set of episodes from a different host
-    // just comment out the above episodeList line and uncomment the below one
-    //episodeList = episodeList.reverse().slice(0,(episodeCount/hostCount)*2); // last 2 fractions
-
     let landingPage = getPage(resultList[resultIndex][1]);
-    if (landingPage.indexOf(tvShowIndicator) != -1) { // if it's a tv show
+    if (landingPage.indexOf(tvShowIndicator) !== -1) { // if it's a tv show
         displayEpisodeList();
     }
     else { // if it's a movie
@@ -125,7 +173,8 @@ function retrieveEpisodeList(resultIndex) { // gets episodes of a tv show and sa
 
 function displayEpisodeList() { // displays the contents of episodeList
     embedVideo(""); // hide the video container
-    document.getElementById("back-button").style.visibility = "visible"; // show the back button
+    document.getElementById("back-button").style.visibility = "visible"; // show back button
+    document.getElementById("settings-button").style.visibility = "hidden"; // hide settings button
     let displayText = resultList[pageHistory.resultIndex][0]; // show/movie name
 
     for (let i = 0; i < episodeList.length; i++) {
@@ -133,7 +182,7 @@ function displayEpisodeList() { // displays the contents of episodeList
         onclick="retrieveVideoStreams(${i});">${episodeList[i][0]}</div>`;
     }
 
-    document.getElementById("results").innerHTML = displayText;
+    document.getElementById("results").innerHTML = displayText || "something went wrong";
     
     if (pageHistory.state = STATES.STREAMS) {
         document.body.scrollTop = pageHistory.scrollPos;
@@ -158,21 +207,53 @@ function retrieveVideoStreams(episodeIndex) { // gets streams for a video and sa
         episodeId = episodeList[0][1];
     }
 
-    let tokenUrl = `https://solarmoviez.to/ajax/movie_token?eid=${episodeId}&mid=${movieId}`;
-    let tokenScript = getPage(tokenUrl);
-    _x = "";
-    _y = "";
-    eval(tokenScript); // this sets _x and _y
-    if (_x == undefined) console.log(tokenScript);
-    let streamUrl = `https://solarmoviez.to/ajax/movie_sources/${episodeId}?x=${_x}&y=${_y}`;
-    let streamPage = getPage(streamUrl);
-    let streamSources;
-    try {
-        streamSources = JSON.parse(streamPage).playlist[0].sources.reverse();
+    let streamSources = [];
+    if (settings.host !== "openload") {
+        let tokenUrl = `https://solarmoviez.to/ajax/movie_token?eid=${episodeId}&mid=${movieId}`;
+        let tokenScript = getPage(tokenUrl);
+        _x = "";
+        _y = "";
+        eval(tokenScript); // this sets _x and _y
+        let streamUrl = `https://solarmoviez.to/ajax/movie_sources/${episodeId}?x=${_x}&y=${_y}`;
+        let streamPage = getPage(streamUrl);
+        try {
+            streamSources = JSON.parse(streamPage).playlist[0].sources.reverse();
+        }
+        catch (e) {
+            streamSources = [];
+        }
     }
-    catch (e) {
-        streamSources = [];
+    else {
+        let embedPageQuery = getPage("https://solarmoviez.to/ajax/movie_embed/" + episodeId);
+        let embedPageUrl;
+        try {
+            embedPageUrl = JSON.parse(embedPageQuery).src;
+        }
+        catch (e) {
+            embedPageUrl = "";
+            streamSources = [];
+        }
+        if (embedPageUrl.indexOf("openload") !== -1) { // don't continue if empty or streamango link
+            let embedPage = getPage(embedPageUrl);
+            openloadHexString = getSubstrings(embedPage, olHexStart, olHexEnd)[0];
+            olHexId = getSubstrings(embedPage, olHexStart, ">")[0]; // get id so we can remove it
+            openloadHexString = openloadHexString.slice(olHexId.length + 1); // remove id
+            let openloadScript = getSubstrings(embedPage, olScriptStart, olScriptEnd)[0];
+            if (openloadHexString && openloadScript) {
+                eval(openloadScript + olScriptEnd); // this sets openloadStreamUrl
+            }
+            if (openloadStreamUrl) {
+                streamSources = [{
+                    "file": `https://openload.co/stream/${openloadStreamUrl}?mime=true`
+                }];
+            }
+            else {
+                streamSources = [];
+            }
+        }
     }
+    openloadHexString = "";
+    openloadStreamUrl = "";
 
     // for googlevideo hosting, the sources had labels like 720p, 1080p, etc.
     for (let i = 0; i < streamSources.length; i++) {
@@ -194,12 +275,13 @@ function retrieveVideoStreams(episodeIndex) { // gets streams for a video and sa
 function displayVideoStreams() { // displays the contents of streamList
     embedVideo(""); // hide the video container
     document.getElementById("back-button").style.visibility = "visible"; // show the back button
+    document.getElementById("settings-button").style.visibility = "hidden"; // hide settings button
     let displayText = resultList[pageHistory.resultIndex][0]; // movie or show name
     if (pageHistory.episodeIndex != -1) { // if it's a tv show
         displayText += ": " + episodeList[pageHistory.episodeIndex][0]; // episode name
     }
-    if (streamList == []) {
-        displayText = "hmmm. looks like something might be broken";
+    if (streamList.length === 0) {
+        displayText = "looks like this video isn't available from this host";
     }
     else {
         for (let i = 0; i < streamList.length; i++) {
@@ -218,6 +300,11 @@ function displayVideoStreams() { // displays the contents of streamList
 }
 
 // other functions that might be called
+function pageLoaded() {
+    checkForUpdate();
+    getSettings();
+}
+
 function checkForUpdate() { // download the version file to see if there is an update available
     let currentVersionFile = JSON.parse(getPage("./version.json"));
     let newestVersionFile = JSON.parse(getPage("http://palossand.com/opcor/version.json"));
@@ -225,8 +312,6 @@ function checkForUpdate() { // download the version file to see if there is an u
     let currentVersion = currentVersionFile.version.split('.');
     let newestVersion = newestVersionFile.version.split('.');
     let updateMessage = "";
-    console.log("current: " + currentVersion);
-    console.log("newest: " + newestVersion);
     for (var i = 0; i < currentVersion.length; i++) {
         if (currentVersion[i] < newestVersion[i]) {
             updateMessage = newestVersionFile.message;
@@ -239,7 +324,7 @@ function checkForUpdate() { // download the version file to see if there is an u
     }
     if (updateNecessary) {
         var popupText = updateMessage;
-        slideInPopup(popupText, 20000); // show for 8 seconds
+        slideInPopup(popupText, 20000); // show for 20 seconds
     }
 }
 function performUpdate() { // initiates a new update (in the backend code)
@@ -249,6 +334,15 @@ function performUpdate() { // initiates a new update (in the backend code)
 function updateFinished() { // notifies the user that the update has finished
     console.log("update completed");
     slideInPopup("update complete! please restart Opcor now", 20000); // show for 20 seconds
+}
+
+function getSettings() {
+    try {
+        settings = JSON.parse(getPage("./settings.json"));
+    }
+    catch (e) {
+        settings = { host: "openload" };
+    }
 }
 
 function goBack() { // go back one page (e.g. stream list to episode list)
@@ -267,10 +361,10 @@ function embedVideo(videoUrl) { // starts playing the video in a box under the s
     document.getElementById("video-source").src = videoUrl;
     document.getElementById("video-embed").load();
     if (videoUrl == "") {
-        document.getElementById("video-container").style.visibility = "hidden";
+        document.getElementById("video-container").style.display = "none";
     }
     else {
-        document.getElementById("video-container").style.visibility = "visible";
+        document.getElementById("video-container").style.display = "block";
     }
 }
 
@@ -315,11 +409,45 @@ function getSubstrings(searchStr, startStr, endStr, strCount = 1) { // [startStr
 }
 
 function slideInPopup(popupMessage, popupDuration) { // slides in popup from the top of the screen
-    popupBox = document.getElementById("alert-popup");
+    let popupBox = document.getElementById("alert-popup");
     popupBox.innerHTML = popupMessage;
     popupBox.style.top = "20px";
     setTimeout(function(){ popupBox.style.top = "-120px" }, popupDuration);
 }
+
+function toggleMenu() {
+    if (document.getElementById("menu-popup").style.top === "20px") {
+        slideOutMenu();
+    }
+    else { /* first time top is unset, so show menu */
+        slideInMenu();
+    }
+}
+function slideInMenu() {
+    let hostButtons = document.getElementsByName("host");
+    for (let i = 0; i < hostButtons.length; i++) {
+        if (hostButtons[i].value === settings.host) {
+            hostButtons[i].checked = true;
+            break;
+        }
+    }
+    menuBox = document.getElementById("menu-popup");
+    menuBox.style.top = "20px";
+}
+function slideOutMenu() {
+    let hostButtons = document.getElementsByName("host");
+    for (let i = 0; i < hostButtons.length; i++) {
+        if (hostButtons[i].checked) {
+            settings.host = hostButtons[i].value;
+            break;
+        }
+    }
+    let fileContents = JSON.stringify(settings);
+    writeFileFromFrontend("settings.json", fileContents);
+    menuBox = document.getElementById("menu-popup");
+    menuBox.style.top = "-640px";
+}
+// also: style the form
 
 function selectText(element) { // selects the text of element
     let text = document.getElementById(element);
@@ -353,6 +481,7 @@ function unescaee(str) {
 //
 // TODO:
 // add next and previous buttons (push navs to popped-out window?)
-// rewrite episode list parser
+// rewrite episode list parser --- DONE
+//   fix crap-ton of bugs introduced by rewrite
 //
 // * * * * * * * * * * * * * * * * * * * *

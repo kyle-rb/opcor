@@ -17,6 +17,33 @@ body {
 a, a:visited, a:link {
     color: #c80058;
 }
+input[type="radio"] {
+    position: relative;
+}
+input[type="radio"]:focus {
+    outline-style: none;
+}
+input[type="radio"]:after {
+    content: "●";
+    display: block;
+    position: absolute;
+    top: 0px;
+    left: -1px;
+    height: 14px;
+    width: 14px;
+    border-radius: 1px;
+    box-shadow: 1px 1px 1px #60686c inset;
+    background-color: #e8f0f4;
+    font-size: 0px;
+    color: #c80059;
+    line-height: 8px;
+    text-indent: -7px;
+    overflow: hidden;
+    transition: font-size 0.5s;
+}
+input[type="radio"]:checked:after {
+    font-size: 50px;
+}
 ::selection {
     color: #6000f0;
 }
@@ -48,7 +75,10 @@ a, a:visited, a:link {
     transition: width 0.2s;
 }
 #video-container {
-    visibility: hidden;
+    display: none;
+}
+#video-embed {
+    width: 100%;
 }
 .content-box { /* curved box with padding around text; fills container */
     position: relative;
@@ -79,7 +109,7 @@ a, a:visited, a:link {
 .alert-spacer {
     width: 400px;
 }
-#alert-popup, #bookmark-popup { /* boxes that slide in from the top */
+#alert-popup, #bookmark-popup, #menu-popup { /* boxes that slide in from the top */
     position: fixed;
     padding: 16px;
     border-radius: 4px;
@@ -96,10 +126,21 @@ a, a:visited, a:link {
     transition: top 0.5s;
 }
 #bookmark-popup { /* box containing bookmarks */
-    top: -640px;
     height: 400px;
+    top: -640px;
     left: 60px;
     right: 60px;
+    text-align: left;
+    overflow: scroll;
+    z-index: 1;
+    transition: top 1.0s;
+}
+#menu-popup { /* box containing menu */
+    height: 400px;
+    top: -640px;
+    left: 60px;
+    right: 60px;
+    font-size: .5em;
     text-align: left;
     overflow: scroll;
     z-index: 1;
@@ -128,6 +169,18 @@ a, a:visited, a:link {
     animation-duration: 5.0s;
     animation-iteration-count: infinite;
     animation-timing-function: linear;
+}
+.close-menu {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    height: 20px;
+    width: 20px;
+    font-size: 16pt;
+    color: #909090;
+    line-height: 12px;
+    text-align: center;
+    cursor: pointer;
 }
 #video-fill {
     position: absolute;
@@ -199,7 +252,7 @@ button.bookmark-list { /* open the list of bookmarks (which is a feature I have 
     background-size: 32px;
     visibility: visible;
 }
-button.back { /* go to previous page */
+button.back, button.settings { /* go to previous page */
     position: absolute;
     top: 8px;
     left: 8px;
@@ -213,6 +266,13 @@ button.back { /* go to previous page */
     color: #ffffff;
     background-color: #c80058;
     visibility: hidden;
+}
+button.settings {
+    background-image: url("img/settings.png");
+    background-size: 32px;
+    background-repeat: no-repeat;
+    background-position: center;
+    visibility: visible;
 }
 button.embed, button.window, button.download, button.copy { /* 4 stream buttons in a row */
     position: relative;
