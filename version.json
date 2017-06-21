@@ -1,4 +1,4 @@
 {
-    "version": "1.1.1",
-    "message": "<div style='background-color:#e0e8ec'>the site that Opcor gets data from switched video hosts, so this is a temporary update that makes it work again. a lot of shows aren't ported to the new host yet, but this is better than nothing. also you have to download a fresh copy, because I screwed a thing up. <a href='#' onclick=\"copyText('https://www.dropbox.com/sh/mba9v5cise41cko/AABOXazb56F9Mof4A_wj3L7fa?dl=0')\">click here to copy a url for the download</a></div>"
+    "version": "1.1.2",
+    "message": "<div style='background-color:#e0e8ec'>i added a setting so that you can choose which video host server to stream from<a href='#' onclick=\"performUpdate()\">click here to update</a> or if that doesn't work, use the link at the bottom of the page to get a download</div>"
 }
