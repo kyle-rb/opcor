@@ -1,4 +1,4 @@
 {
-    "version": "1.1.2",
-    "message": "<div style='background-color:#e0e8ec'>i added a setting so that you can choose which video host server to stream from<a href='#' onclick=\"performUpdate()\">click here to update</a> or if that doesn't work, use the link at the bottom of the page to get a download</div>"
+    "version": "1.1.3",
+    "message": "<div style='background-color:#e0e8ec'>fixed some streaming issues; there should be a lot more working streams now. <a href='#' onclick=\"performUpdate()\">click here to update</a> or if that doesn't work, use the link at the bottom of the page to get a download</div>"
 }

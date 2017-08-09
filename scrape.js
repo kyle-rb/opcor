@@ -39,6 +39,7 @@ let settings = {}; // stores settings
 let resultList = []; // list of pairs containing show/movie names and urls
 let episodeList = []; // list of pairs containing episode names and ids
 let streamList = []; // list of pairs containing string quality identifiers and urls
+let frameDocument; // iframe container for video embed
 
 let _x, _y; // these catch the values for the script that gets 'eval'ed; they have to be up here
 let openloadHexString = "", openloadStreamUrl = ""; // input and output for Openload
@@ -140,17 +141,25 @@ function retrieveEpisodeList(resultIndex) { // gets episodes of a tv show and sa
     }
     let hostMatchFunctionObj = {
         "main-vip": hostName => hostName === "VIP 1",
-        "alt-vip": hostName => hostName.slice(0, 3) === "VIP" && hostName !== "VIP 1",
+        "alt-vip": hostName => hostName === "VIP 6",
         "openload": hostName => hostName === "OPENLOAD",
         "backup": hostName => hostName === "BACKUP"
     }
-    let hostMatchFunction = hostMatchFunctionObj[settings.host]||hostMatchFunctionObj["openload"];
+    let hostMatchFunction = hostMatchFunctionObj[settings.host] || hostMatchFunctionObj["openload"];
     let hostList = getSubstrings(episodesPage, hostNameStart, hostNameEnd, hostCount);
     hostList.reverse();
     let hostIndex = -1;
+
+    console.log("host count: " + hostCount);
+    console.log("episode count: " + episodeCount);
+
     for (let i = 0; i < hostList.length; i++) {
         hostList[i] = hostList[i].slice(hostNameStart.length);
+
+        console.log(hostList[i]);
+
         if (hostMatchFunction(hostList[i])) {
+            console.log("chose: " + hostList[i]);
             hostIndex = i;
             break;
         }
@@ -247,10 +256,12 @@ function retrieveVideoStreams(episodeIndex) { // gets streams for a video and sa
                     "file": `https://openload.co/stream/${openloadStreamUrl}?mime=true`
                 }];
             }
-            else {
-                streamSources = [];
-            }
         }
+        // else if (embedPageUrl.indexOf("streamango") !== -1) { // temporary handler for streamango
+        //     streamSources = [{
+        //         "file": embedPageUrl
+        //     }];
+        // } // just don't try and use the players; only copy links
     }
     openloadHexString = "";
     openloadStreamUrl = "";
@@ -303,6 +314,10 @@ function displayVideoStreams() { // displays the contents of streamList
 function pageLoaded() {
     checkForUpdate();
     getSettings();
+
+    frameDocument = document.getElementById('video-embed-frame').contentWindow.document;
+    frameDocument.head.innerHTML = '<style>html,body{height:100%;padding:0;border:none;margin:0;}#video-embed{position:absolute;width:100%;height:100%;}</style>';
+    frameDocument.body.innerHTML = '<video id="video-embed" controls autoplay><source id="video-source" src="" type="video/mp4"></video>';
 }
 
 function checkForUpdate() { // download the version file to see if there is an update available
@@ -358,8 +373,8 @@ function goBack() { // go back one page (e.g. stream list to episode list)
 }
 
 function embedVideo(videoUrl) { // starts playing the video in a box under the stream list
-    document.getElementById("video-source").src = videoUrl;
-    document.getElementById("video-embed").load();
+    frameDocument.getElementById("video-source").src = videoUrl;
+    frameDocument.getElementById("video-embed").load();
     if (videoUrl == "") {
         document.getElementById("video-container").style.display = "none";
     }
@@ -383,7 +398,7 @@ function getPage(url) { // gets a string of the html of the page at the url pass
     console.log("started loading " + url);
     let startTime = Date.now();
     let xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("GET", url, false); // false for synchronous request; UI is frozen anyway
+    xmlHttp.open("GET", url, false); // false for synchronous request; doesn't matter if UI freezes
     xmlHttp.send(null);
     console.log("resource load time: " + (Date.now() - startTime));
     return xmlHttp.responseText;
@@ -480,8 +495,7 @@ function unescaee(str) {
 // * * * * * * * * * * * * * * * * * * * *
 //
 // TODO:
+// add streamango support (or remove the embed thing as an option for real builds)
 // add next and previous buttons (push navs to popped-out window?)
-// rewrite episode list parser --- DONE
-//   fix crap-ton of bugs introduced by rewrite
 //
 // * * * * * * * * * * * * * * * * * * * *

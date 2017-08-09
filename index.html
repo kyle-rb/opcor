@@ -19,11 +19,11 @@
           <label>Host:</label>
           <div>
             <input id="option-main-vip" type="radio" name="host" value="main-vip">
-            <label for="option-main-vip">main host - googlevideo, so it's fast, but a lot of videos are missing</label>
+            <label for="option-main-vip">main host - usually fast, but a lot of videos are missing</label>
           </div>
           <div>
             <input id="option-alt-vip" type="radio" name="host" value="alt-vip">
-            <label for="option-alt-vip">alt main host - sometimes slow and unreliable, a lot missing</label>
+            <label for="option-alt-vip">alt main host - apparently this is google now, via blogspot or something</label>
           </div>
           <div>
             <input id="option-openload" type="radio" name="host" value="openload">
@@ -60,9 +60,7 @@
   </div>
   <div id="video-container" class="scale-box">
     <div class="content-box">
-      <video id="video-embed" controls autoplay>
-        <source id="video-source" src="" type="video/mp4">
-      </video>
+      <iframe id="video-embed-frame" src="https://solarmoviez.to/ajax/v4_movie_episodes/" allowfullscreen=true></iframe>
     </div>
   </div>
   <div id="select-box" class="invisible-box"></div>

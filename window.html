@@ -6,9 +6,16 @@
   <script type="text/javascript" src="scrape.js"></script>
   <script>
     var video;
-    function loadVideo() {
-      document.getElementById('video-source').src = window.location.hash.slice(1);
-      if (!video) { video = document.getElementById('video-fill'); }
+    var frameEmbedDocument;
+    function initialLoad() {
+      frameEmbedDocument = document.getElementById('video-frame').contentWindow.document;
+      frameEmbedDocument.head.innerHTML = '<style>html,body{height:100%;padding:0;border:none;margin:0;}#video-fill{position:absolute;width:100%;height:100%;}</style>';
+      frameEmbedDocument.body.innerHTML = '<video id="video-fill" controls><source src="'
+        + window.location.hash.slice(1) + '" type="video/mp4"></video>';
+      frameEmbedDocument.body.onkeydown = onPress;
+
+      video = frameEmbedDocument.getElementById('video-fill');
+      video.focus(); // for keyboard events
       video.load();
       video.play();
     }
@@ -17,7 +24,7 @@
         switch (event.keyCode) {
           case 32: // spacebar
           case 75: // k
-            video.paused ? video.play() : video.pause(); // pause video
+            video.paused ? video.play() : video.pause(); // play/pause video
             break;
           case 77: // m
             video.muted = !video.muted; // mute audio
@@ -41,9 +48,7 @@
     }
   </script>
 </head>
-<body onload="loadVideo()" onkeydown="onPress(event)">
-  <video id="video-fill" controls>
-    <source id="video-source" src="" type="video/mp4">
-  </video>
+<body onload="initialLoad()">
+  <iframe id="video-frame" src="https://solarmoviez.to/ajax/v4_movie_episodes/" allowfullscreen=true></iframe>
 </body>
 </html>

@@ -74,6 +74,23 @@ input[type="radio"]:checked:after {
     margin-bottom: 32px;
     transition: width 0.2s;
 }
+#video-frame {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border-style: none;
+    border-width: 0;
+    margin: 0;
+}
+#video-embed-frame {
+    width: 100%;
+    height: 400px;
+    padding: 0;
+    border-style: none;
+    border-width: 0;
+    margin: 0;
+}
 #video-container {
     display: none;
 }
@@ -144,7 +161,7 @@ input[type="radio"]:checked:after {
     text-align: left;
     overflow: scroll;
     z-index: 1;
-    transition: top 1.0s;
+    transition: top 0.8s;
 }
 .invisible-box { /* invisible box with text in it to be programatically selected, then copied */
     position: fixed;
