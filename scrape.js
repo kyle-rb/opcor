@@ -10,23 +10,23 @@ let writeFileFromFrontend = electron.remote.require("./main").writeFileFromFront
 // global constants - denote start and end points of various parts of the page structure
 const STATES = Object.freeze({ SEARCH: 0, EPISODES: 1, STREAMS: 2 }); // states for pageHistory
 
-const resultUrlStart = "ml-item";
-const resultUrlEnd = '" class';
-const resultTitleStart = 'ml-mask" title="'; // might need to alter because newlines
-const resultTitleEnd = '"';
-const tvShowIndicator = "<strong>Episode:</strong>";
-const episodeSectionStart = "<ul id="; // sections separating different hosts
-const episodeSectionEnd = "<\\/ul>"
-const episodeIdStart = 'id=\\"ep-';
-const episodeIdEnd = '\\"';
-const episodeTitleStart = "><\\/i>";
-const episodeTitleEnd = "     "; // five spaces should be enough
-const hostNameStart = '<a title=\\"';
-const hostNameEnd = '\\"';
-const olHexStart = '<span id="';
-const olHexEnd = "</";
-const olScriptStart = "var _0x9495="; // could change if they redo the obfuscation
-const olScriptEnd = "}});";
+const resultUrlStart = 'poster" href="';
+const resultUrlEnd = '"';
+const resultTitleStart = 'alt="'; // might need to alter because newlines
+const resultTitleEnd = ' | ';
+const tvShowIndicator = 'name">TV-Series';
+const episodeSectionStart = 'fa-server'; // sections separating different hosts
+const episodeSectionEnd = '</div> </div>';
+const episodeIdStart = 'data-id="';
+const episodeIdEnd = '"';
+const episodeTitleStart = '">'; // will result in 3 extra strings at the start of the list
+const episodeTitleEnd = '<';
+const hostNameStart = 'fa-server"></i> ';
+const hostNameEnd = ' <';
+const olHexStart = '<span style="" id="';
+const olHexEnd = '</';
+const olScriptStart = 'var _0x9495='; // could change if they redo the obfuscation
+const olScriptEnd = '}});';
 
 // global variables - hold variables that need to be remembered between functions
 let pageHistory = { state: STATES.SEARCH,
@@ -69,18 +69,18 @@ function retrieveSearchResults(searchString) { // searches for string and saves 
     let encodedSearchString = searchString.trim().toLowerCase();
     encodedSearchString = encodedSearchString.replace(/[^A-Za-z0-9\s]/g,""); // remove special chars
     encodedSearchString = encodedSearchString.replace(/\s+/g, "+"); // replace spaces with pluses
-    let searchUrl = "https://solarmoviez.to/search/" + encodedSearchString + ".html";
+    let searchUrl = "https://fmovies.is/search?keyword=" + encodedSearchString;
     let resultsPage = getPage(searchUrl); // html of search results page
     if (resultsPage.includes("No result found.") || resultsPage.includes("Error 404")) {
         resultList = [];
     }
     else {
-        let resultCount = (resultsPage.match(/ml-item/g)||[]).length;
+        let resultCount = (resultsPage.match(/\s\|\s/g)||[]).length;
         let urlList = getSubstrings(resultsPage, resultUrlStart, resultUrlEnd, resultCount);
         let titleList = getSubstrings(resultsPage, resultTitleStart, resultTitleEnd, resultCount);
         resultList = [];
         for (let i = 0; i < resultCount; i++) {
-            resultList[i] = [titleList[i].slice(16), urlList[i].slice(31)];
+            resultList[i] = [titleList[i].slice(5), "https://fmovies.is" + urlList[i].slice(14)];
         }
     }
 
@@ -118,36 +118,31 @@ function displaySearchResults() { // displays the contents of resultsList
 function retrieveEpisodeList(resultIndex) { // gets episodes of a tv show and saves to episodeList
     pageHistory.resultIndex = resultIndex;
     
-    let urlList = resultList[resultIndex][1].split("-"); // tokenize by dashes
-    let movieId = urlList[urlList.length - 1].slice(0, -5); // last section, with ".html" removed
-
-    episodeListUrl = "https://solarmoviez.to/ajax/v4_movie_episodes/" + movieId;
-    episodesPage = getPage(episodeListUrl);
-    let hostCount = (episodesPage.match(/server-item/g)||[]).length; // number of different hosts
+    let episodeListUrl = resultList[resultIndex][1];
+    let episodesPage = getPage(episodeListUrl);
+    let hostCount = (episodesPage.match(/fa-server/g)||[]).length; // number of different hosts
     let sections = getSubstrings(episodesPage, episodeSectionStart, episodeSectionEnd, hostCount);
     let idLists = [];
     let titleLists = [];
     let episodeCount = 0;
     for (let i = 0; i < sections.length; i++) {
-        episodeCount = (sections[i].match(/data-index/g)||[]).length; // episodes from this host
+        episodeCount = (sections[i].match(/href/g)||[]).length; // episodes from this host
         idLists[i] = getSubstrings(sections[i], episodeIdStart, episodeIdEnd, episodeCount);
-        titleLists[i]= getSubstrings(sections[i], episodeTitleStart, episodeTitleEnd, episodeCount);
+        titleLists[i]= getSubstrings(sections[i], episodeTitleStart,episodeTitleEnd,episodeCount+3);
+        titleLists[i] = titleLists[i].slice(3); // 3 extra matches at the beginning              ^
         for (let j = 0; j < episodeCount; j++) {
-            titleLists[i][j] = titleLists[i][j].slice(6);
-            idLists[i][j] = idLists[i][j].slice(8);
+            titleLists[i][j] = "Episode " + titleLists[i][j].slice(episodeTitleStart.length);
+            idLists[i][j] = idLists[i][j].slice(episodeIdStart.length);
         }
-        titleLists[i].reverse(); // list of episodes is backwards
-        idLists[i].reverse();
     }
     let hostMatchFunctionObj = {
-        "main-vip": hostName => hostName === "VIP 1",
-        "alt-vip": hostName => hostName === "VIP 6",
-        "openload": hostName => hostName === "OPENLOAD",
-        "backup": hostName => hostName === "BACKUP"
+        "main-vip": hostName => hostName === "Server G1", // are there others on fmovies?
+        "alt-vip": hostName => hostName === "Server F4",
+        "openload": hostName => hostName === "OpenLoad",
+        "backup": hostName => hostName === "MyCloud" // change the label, or name, or both?
     }
     let hostMatchFunction = hostMatchFunctionObj[settings.host] || hostMatchFunctionObj["openload"];
     let hostList = getSubstrings(episodesPage, hostNameStart, hostNameEnd, hostCount);
-    hostList.reverse();
     let hostIndex = -1;
 
     console.log("host count: " + hostCount);
@@ -165,14 +160,14 @@ function retrieveEpisodeList(resultIndex) { // gets episodes of a tv show and sa
         }
     }
     episodeList = [];
-    if (hostIndex !== -1) {
+    if (hostIndex !== -1) { // mux lists into list of tuples
         for (let i = 0; i < titleLists[hostIndex].length; i++) {
             episodeList[i] = [titleLists[hostIndex][i], idLists[hostIndex][i]];
         }
     }
 
     let landingPage = getPage(resultList[resultIndex][1]);
-    if (landingPage.indexOf(tvShowIndicator) !== -1) { // if it's a tv show
+    if (episodesPage.indexOf(tvShowIndicator) !== -1) { // if it's a tv show
         displayEpisodeList();
     }
     else { // if it's a movie
@@ -205,9 +200,13 @@ function displayEpisodeList() { // displays the contents of episodeList
 }
 
 function retrieveVideoStreams(episodeIndex) { // gets streams for a video and saves to streamList
-    let urlList = resultList[pageHistory.resultIndex][1].split("-"); // tokenize by dashes
-    let movieId = urlList[urlList.length - 1].slice(0, -5); // last section, with ".html" removed
-
+    let hostServerIds = {
+        "main-vip": "34", // Server G1
+        "alt-vip": "30", // Server F4
+        "openload": "24", // OpenLoad
+        "backup": "28", // MyCloud
+    }
+    let serverId = hostServerIds[settings.host];
     let episodeId;
     if (episodeIndex != -1) { // if it's a tv show
         episodeId = episodeList[episodeIndex][1];
@@ -216,27 +215,55 @@ function retrieveVideoStreams(episodeIndex) { // gets streams for a video and sa
         episodeId = episodeList[0][1];
     }
 
+    // make initial request to
+    // https://fmovies.is/ajax/episode/info?ts=<ts>&_=<hash>&id=<episodeId>&server=<serverId>&update=0
+    // to get either the stream or the grabber, depending on the host
+    // may check for origin of fmovies
+
+    // the timestamp follows weird rules
+    let hourTimestamp = Math.floor(Date.now() / (60 * 60 * 1000)); // hours since 1970
+    let hourOfDay = hourTimestamp % 24 - 4; // hour of day on 24 hour clock in EST
+    console.log("hourOfDay: " + hourOfDay);
+    if (hourOfDay === 1) { // 1AM
+        hourTimestamp += 12; // plus 12 hours
+    }
+    else if ((hourOfDay >= 14 && hourOfDay <= 23) || hourOfDay === 0) { // 2PM - 12AM
+        hourTimestamp -= 12; // minus 12 hours
+    }
+    // otherwise normal time works
+    hourTimestamp *= (60 * 60); // make it a normal unix seconds timestamp
+
+    let thisOneWeirdString = "ypYZrEpHb"; // stop hardcoding this
+    let hashParam = hashString(thisOneWeirdString);
+    let properties = ["id",      "server", "update", "ts"]
+    let values =     [episodeId, serverId, "0",      hourTimestamp];
+    for (var i = 0; i < properties.length; i++) {
+        console.log("current hash: " + hashParam);
+        var charCodeSum = 0;
+        var propNameAndValue = thisOneWeirdString + properties[i] + values[i];
+        for (var j = 0; j < propNameAndValue.length; j++) {
+            charCodeSum += propNameAndValue.charCodeAt(j);
+        }
+        hashParam += hashString(charCodeSum.toString(16)); // hash the hex representation of the sum
+    }
+    let streamInfoQuery = getPage(`https://fmovies.is/ajax/episode/info?ts=${hourTimestamp}&_=${hashParam}&id=${episodeId}&server=${serverId}&update=0`);
+    
     let streamSources = [];
     if (settings.host !== "openload") {
-        let tokenUrl = `https://solarmoviez.to/ajax/movie_token?eid=${episodeId}&mid=${movieId}`;
-        let tokenScript = getPage(tokenUrl);
-        _x = "";
-        _y = "";
-        eval(tokenScript); // this sets _x and _y
-        let streamUrl = `https://solarmoviez.to/ajax/movie_sources/${episodeId}?x=${_x}&y=${_y}`;
-        let streamPage = getPage(streamUrl);
-        try {
-            streamSources = JSON.parse(streamPage).playlist[0].sources.reverse();
-        }
-        catch (e) {
-            streamSources = [];
-        }
+        console.log(streamInfo);
+        // let streamUrl = `https://solarmoviez.to/ajax/movie_sources/${episodeId}?x=${_x}&y=${_y}`;
+        // let streamPage = getPage(streamUrl);
+        // try {
+        //     streamSources = JSON.parse(streamPage).playlist[0].sources.reverse();
+        // }
+        // catch (e) {
+        //     streamSources = [];
+        // }
     }
     else {
-        let embedPageQuery = getPage("https://solarmoviez.to/ajax/movie_embed/" + episodeId);
         let embedPageUrl;
         try {
-            embedPageUrl = JSON.parse(embedPageQuery).src;
+            embedPageUrl = JSON.parse(streamInfoQuery).target;
         }
         catch (e) {
             embedPageUrl = "";
@@ -257,11 +284,6 @@ function retrieveVideoStreams(episodeIndex) { // gets streams for a video and sa
                 }];
             }
         }
-        // else if (embedPageUrl.indexOf("streamango") !== -1) { // temporary handler for streamango
-        //     streamSources = [{
-        //         "file": embedPageUrl
-        //     }];
-        // } // just don't try and use the players; only copy links
     }
     openloadHexString = "";
     openloadStreamUrl = "";
@@ -314,6 +336,11 @@ function displayVideoStreams() { // displays the contents of streamList
 function pageLoaded() {
     checkForUpdate();
     getSettings();
+
+    // delete window.document.referrer;
+    // window.document.__defineGetter__('referrer', function () {
+    //     return "https://fmovies.is";
+    // });
 
     frameDocument = document.getElementById('video-embed-frame').contentWindow.document;
     frameDocument.head.innerHTML = '<style>html,body{height:100%;padding:0;border:none;margin:0;}#video-embed{position:absolute;width:100%;height:100%;}</style>';
@@ -462,7 +489,6 @@ function slideOutMenu() {
     menuBox = document.getElementById("menu-popup");
     menuBox.style.top = "-640px";
 }
-// also: style the form
 
 function selectText(element) { // selects the text of element
     let text = document.getElementById(element);
@@ -479,6 +505,14 @@ function selectText(element) { // selects the text of element
         selection.removeAllRanges();
         selection.addRange(range);
     }
+}
+
+function hashString(str) { // fmovies has a hash funchtion i guess
+    var hash = 0;
+    for (var i = 0; i < str.length; i++) {
+        hash += str.charCodeAt(i) + i;
+    }
+    return hash;
 }
 
 // this is to avoid a thing where JSFuck gets 'p' from the fourth letter in http:// or https://, but

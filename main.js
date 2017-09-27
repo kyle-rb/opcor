@@ -8,7 +8,9 @@ let mainWindow;
 
 function createWindow() {
     mainWindow = new BrowserWindow({width: 800, height: 600, icon:"img/opcor-icon.png"});
-    mainWindow.loadURL("file://" + __dirname + "/index.html");
+    mainWindow.loadURL("file://" + __dirname + "/index.html", {
+        extraHeaders: "Referer: https://fmovies.is" // spoof http header
+    }); // "httpReferrer" option wasn't working
     mainWindow.on("closed", function() {
         mainWindow = null; // change this if we switch to multiple windows
     });
