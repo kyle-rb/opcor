@@ -9,15 +9,12 @@ let mainWindow;
 function createWindow() {
     mainWindow = new BrowserWindow({width: 800, height: 600, icon:"img/opcor-icon.png"});
     mainWindow.loadURL("file://" + __dirname + "/index.html", {
-        extraHeaders: "Referer: https://fmovies.is" // spoof http header
+        extraHeaders: "Referer: https://fmovies.to", // spoof http header
+        httpReferrer: "test http referrer string"
     }); // "httpReferrer" option wasn't working
     mainWindow.on("closed", function() {
         mainWindow = null; // change this if we switch to multiple windows
     });
-}
-
-function writeBookmarks(bookmarksObject) { // should really implement error handling at some point
-    fs.write("bookmarks.json", JSON.stringify(bookmarksObject), function() {});
 }
 
 app.on("ready", createWindow); // called when Electron has finished initialization
@@ -55,6 +52,21 @@ function writeFileFromFrontend(fileName, fileContents) {
         fileEncoding = "utf8";
     }
     fs.writeFileSync(__dirname + "/" + fileName, fileContents, fileEncoding);
+}
+
+function requestFileWithReferer(filePath, referer, callbackName) {
+    var result = "";
+    var req = request({url: filePath,
+                       encoding: "utf8",
+                       headers: {"Referer": referer}},
+                       function(error, response, body) {
+        if (!error && response.statusCode == 200) {
+            mainWindow.webContents.executeJavaScript(callbackName + "(" + body + ");");
+        }
+        else {
+            console.log("file request failed");
+        }
+    });
 }
 
 // UPDATE FUNCTIONS
@@ -180,3 +192,4 @@ function completeUpdate() { // alert user to restart app
 exports.beginUpdateInMain = beginUpdateInMain;
 exports.keyPressed = keyPressed;
 exports.writeFileFromFrontend = writeFileFromFrontend;
+exports.requestFileWithReferer = requestFileWithReferer;

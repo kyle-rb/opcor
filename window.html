@@ -6,16 +6,10 @@
   <script type="text/javascript" src="scrape.js"></script>
   <script>
     var video;
-    var frameEmbedDocument;
-    function initialLoad() {
-      frameEmbedDocument = document.getElementById('video-frame').contentWindow.document;
-      frameEmbedDocument.head.innerHTML = '<style>html,body{height:100%;padding:0;border:none;margin:0;}#video-fill{position:absolute;width:100%;height:100%;}</style>';
-      frameEmbedDocument.body.innerHTML = '<video id="video-fill" controls><source src="'
-        + window.location.hash.slice(1) + '" type="video/mp4"></video>';
-      frameEmbedDocument.body.onkeydown = onPress;
-
-      video = frameEmbedDocument.getElementById('video-fill');
-      video.focus(); // for keyboard events
+    function loadVideo() {
+      document.getElementById('video-source').src = window.location.hash.slice(1);
+      if (!video) { video = document.getElementById('video-fill'); }
+      //video.focus(); // this was only necessary when there was an iframe
       video.load();
       video.play();
     }
@@ -47,12 +41,13 @@
       }
       else {
         keyPressed(event.key, event.ctrlKey, event.metaKey, event.shiftKey);
-        console.log("registered");
       }
     }
   </script>
 </head>
-<body onload="initialLoad()">
-  <iframe id="video-frame" src="https://solarmoviez.to/ajax/v4_movie_episodes/" allowfullscreen=true></iframe>
+<body onload="loadVideo()" onkeydown="onPress(event)">
+  <video id="video-fill" controls>
+    <source id="video-source" src="" type="video/mp4">
+  </video>
 </body>
 </html>

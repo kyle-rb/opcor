@@ -10,10 +10,10 @@
 
 
 # MACOS:
-electron-packager ./ --platform=darwin --arch=x64 --app-version=$BASH_ARGV --icon=img/opcor-icon.icns --out=builds/ --overwrite --version=1.3.5 
+electron-packager ./ --platform=darwin --arch=x64 --app-version=$BASH_ARGV --icon=img/opcor-icon.icns --out=builds/ --overwrite --version=1.7.9
 
 # WINDOWS:
-electron-packager ./ --platform=win32 --arch=x64 --app-version=$BASH_ARGV --icon=img/opcor-icon.ico --out=builds/ --overwrite --version=1.3.5
+electron-packager ./ --platform=win32 --arch=x64 --app-version=$BASH_ARGV --icon=img/opcor-icon.ico --out=builds/ --overwrite --version=1.7.9
 
 # LINUX:
-electron-packager ./ --platform=linux --arch-x64 --app-version=$BASH_ARGV --icon=img/opcor-icon.ico --out=builds/ --overwrite --version=1.3.5
+electron-packager ./ --platform=linux --arch-x64 --app-version=$BASH_ARGV --icon=img/opcor-icon.ico --out=builds/ --overwrite --version=1.7.9

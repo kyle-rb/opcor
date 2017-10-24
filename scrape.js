@@ -1,11 +1,13 @@
 // this is necessary to be able to call node functions from here
 let electron = require("electron");
-let beginUpdateInMain = electron.remote.require("./main").beginUpdateInMain;
-let keyPressed = electron.remote.require("./main").keyPressed;
+let electronMain = electron.remote.require("./main");
+let beginUpdateInMain = electronMain.beginUpdateInMain;
+let keyPressed = electronMain.keyPressed;
 document.addEventListener("keydown", function(event) {
     keyPressed(event.key, event.ctrlKey, event.metaKey, event.shiftKey);
 });
-let writeFileFromFrontend = electron.remote.require("./main").writeFileFromFrontend;
+let writeFileFromFrontend = electronMain.writeFileFromFrontend;
+let requestFileWithReferer = electronMain.requestFileWithReferer;
 
 // global constants - denote start and end points of various parts of the page structure
 const STATES = Object.freeze({ SEARCH: 0, EPISODES: 1, STREAMS: 2 }); // states for pageHistory
@@ -39,7 +41,6 @@ let settings = {}; // stores settings
 let resultList = []; // list of pairs containing show/movie names and urls
 let episodeList = []; // list of pairs containing episode names and ids
 let streamList = []; // list of pairs containing string quality identifiers and urls
-let frameDocument; // iframe container for video embed
 
 let _x, _y; // these catch the values for the script that gets 'eval'ed; they have to be up here
 let openloadHexString = "", openloadStreamUrl = ""; // input and output for Openload
@@ -60,18 +61,21 @@ var $ = jQuery;
 
 // functions to retrieve and display data
 function executeSearchFromBox() { // gets search string from input box
+    console.log("executeSearchFromBox called");
+
     var queryString = document.getElementById("query-input").value;
-    retrieveSearchResults(queryString);
+    pageHistory.searchString = queryString;
+
+    let encodedQueryString = queryString.trim().toLowerCase();
+    encodedQueryString = encodedQueryString.replace(/[^A-Za-z0-9\s]/g,""); // remove special chars
+    encodedQueryString = encodedQueryString.replace(/\s+/g, "+"); // replace spaces with pluses
+    let queryUrl = "https://fmovies.to/search?keyword=" + encodedQueryString;
+    
+    getPage(queryUrl, retrieveSearchResults);
 }
 
-function retrieveSearchResults(searchString) { // searches for string and saves to resultList
-    pageHistory.searchString = searchString;
-    let encodedSearchString = searchString.trim().toLowerCase();
-    encodedSearchString = encodedSearchString.replace(/[^A-Za-z0-9\s]/g,""); // remove special chars
-    encodedSearchString = encodedSearchString.replace(/\s+/g, "+"); // replace spaces with pluses
-    let searchUrl = "https://fmovies.is/search?keyword=" + encodedSearchString;
-    let resultsPage = getPage(searchUrl); // html of search results page
-    if (resultsPage.includes("No result found.") || resultsPage.includes("Error 404")) {
+function retrieveSearchResults(resultsPage) { // searches for string and saves to resultList
+    if (!resultsPage||resultsPage.includes("No result found.")||resultsPage.includes("Error 404")) {
         resultList = [];
     }
     else {
@@ -80,7 +84,7 @@ function retrieveSearchResults(searchString) { // searches for string and saves 
         let titleList = getSubstrings(resultsPage, resultTitleStart, resultTitleEnd, resultCount);
         resultList = [];
         for (let i = 0; i < resultCount; i++) {
-            resultList[i] = [titleList[i].slice(5), "https://fmovies.is" + urlList[i].slice(14)];
+            resultList[i] = [titleList[i].slice(5), "https://fmovies.to" + urlList[i].slice(14)];
         }
     }
 
@@ -99,7 +103,7 @@ function displaySearchResults() { // displays the contents of resultsList
         displayText = "are any of these the thing you wanted to watch?<br/><br/>";
         for (var i = 0; i < resultList.length; i++) {
             displayText += `<div class="result-box" style="animation-delay:${((i%7/10)-0.3)}s;" 
-            onclick="retrieveEpisodeList(${i});">${resultList[i][0]}</div>`;
+            onclick="getEpisodeListPage(${i});">${resultList[i][0]}</div>`;
         }
         displayText += "<br/>if it's not one of those, then either it's not on there, or you"
             + " fucked up the search terms";
@@ -115,11 +119,13 @@ function displaySearchResults() { // displays the contents of resultsList
     streamList = [];
 }
 
-function retrieveEpisodeList(resultIndex) { // gets episodes of a tv show and saves to episodeList
+function getEpisodeListPage(resultIndex) {
     pageHistory.resultIndex = resultIndex;
-    
     let episodeListUrl = resultList[resultIndex][1];
-    let episodesPage = getPage(episodeListUrl);
+    getPage(episodeListUrl, retrieveEpisodeList);
+}
+
+function retrieveEpisodeList(episodesPage) { // gets episodes of a tv show and saves to episodeList
     let hostCount = (episodesPage.match(/fa-server/g)||[]).length; // number of different hosts
     let sections = getSubstrings(episodesPage, episodeSectionStart, episodeSectionEnd, hostCount);
     let idLists = [];
@@ -166,7 +172,6 @@ function retrieveEpisodeList(resultIndex) { // gets episodes of a tv show and sa
         }
     }
 
-    let landingPage = getPage(resultList[resultIndex][1]);
     if (episodesPage.indexOf(tvShowIndicator) !== -1) { // if it's a tv show
         displayEpisodeList();
     }
@@ -211,14 +216,13 @@ function retrieveVideoStreams(episodeIndex) { // gets streams for a video and sa
     if (episodeIndex != -1) { // if it's a tv show
         episodeId = episodeList[episodeIndex][1];
     }
-    else {
+    else if (episodeList.length > 0) {
         episodeId = episodeList[0][1];
     }
-
-    // make initial request to
-    // https://fmovies.is/ajax/episode/info?ts=<ts>&_=<hash>&id=<episodeId>&server=<serverId>&update=0
-    // to get either the stream or the grabber, depending on the host
-    // may check for origin of fmovies
+    else {
+        displayVideoStreams(); // will display error
+        return;
+    }
 
     // the timestamp follows weird rules
     let hourTimestamp = Math.floor(Date.now() / (60 * 60 * 1000)); // hours since 1970
@@ -238,7 +242,6 @@ function retrieveVideoStreams(episodeIndex) { // gets streams for a video and sa
     let properties = ["id",      "server", "update", "ts"]
     let values =     [episodeId, serverId, "0",      hourTimestamp];
     for (var i = 0; i < properties.length; i++) {
-        console.log("current hash: " + hashParam);
         var charCodeSum = 0;
         var propNameAndValue = thisOneWeirdString + properties[i] + values[i];
         for (var j = 0; j < propNameAndValue.length; j++) {
@@ -246,31 +249,28 @@ function retrieveVideoStreams(episodeIndex) { // gets streams for a video and sa
         }
         hashParam += hashString(charCodeSum.toString(16)); // hash the hex representation of the sum
     }
-    let streamInfoQuery = getPage(`https://fmovies.is/ajax/episode/info?ts=${hourTimestamp}&_=${hashParam}&id=${episodeId}&server=${serverId}&update=0`);
-    
+    requestFileWithReferer(`https://fmovies.to/ajax/episode/info?ts=${hourTimestamp}&_=${hashParam}&id=${episodeId}&server=${serverId}&update=0`, "https://fmovies.to", "writeVideoStreams");
+
+    pageHistory.episodeIndex = episodeIndex;
+    pageHistory.scrollPos = document.body.scrollTop;
+}
+
+function writeVideoStreams(streamInfoQuery) {
     let streamSources = [];
     if (settings.host !== "openload") {
-        console.log(streamInfo);
-        // let streamUrl = `https://solarmoviez.to/ajax/movie_sources/${episodeId}?x=${_x}&y=${_y}`;
-        // let streamPage = getPage(streamUrl);
-        // try {
-        //     streamSources = JSON.parse(streamPage).playlist[0].sources.reverse();
-        // }
-        // catch (e) {
-        //     streamSources = [];
-        // }
+        console.log(streamInfoQuery);
     }
     else {
         let embedPageUrl;
         try {
-            embedPageUrl = JSON.parse(streamInfoQuery).target;
+            embedPageUrl = streamInfoQuery.target; // JSON gets parsed automatically I guess?
         }
         catch (e) {
             embedPageUrl = "";
             streamSources = [];
         }
         if (embedPageUrl.indexOf("openload") !== -1) { // don't continue if empty or streamango link
-            let embedPage = getPage(embedPageUrl);
+            let embedPage = getPage(embedPageUrl); // fuck async lol 
             openloadHexString = getSubstrings(embedPage, olHexStart, olHexEnd)[0];
             olHexId = getSubstrings(embedPage, olHexStart, ">")[0]; // get id so we can remove it
             openloadHexString = openloadHexString.slice(olHexId.length + 1); // remove id
@@ -298,10 +298,6 @@ function retrieveVideoStreams(episodeIndex) { // gets streams for a video and sa
         }
         streamList[i] = [streamSources[i].label, streamSources[i].file];
     }
-
-    pageHistory.episodeIndex = episodeIndex;
-    pageHistory.scrollPos = document.body.scrollTop;
-
     displayVideoStreams();
 }
 
@@ -336,15 +332,6 @@ function displayVideoStreams() { // displays the contents of streamList
 function pageLoaded() {
     checkForUpdate();
     getSettings();
-
-    // delete window.document.referrer;
-    // window.document.__defineGetter__('referrer', function () {
-    //     return "https://fmovies.is";
-    // });
-
-    frameDocument = document.getElementById('video-embed-frame').contentWindow.document;
-    frameDocument.head.innerHTML = '<style>html,body{height:100%;padding:0;border:none;margin:0;}#video-embed{position:absolute;width:100%;height:100%;}</style>';
-    frameDocument.body.innerHTML = '<video id="video-embed" controls autoplay><source id="video-source" src="" type="video/mp4"></video>';
 }
 
 function checkForUpdate() { // download the version file to see if there is an update available
@@ -400,8 +387,8 @@ function goBack() { // go back one page (e.g. stream list to episode list)
 }
 
 function embedVideo(videoUrl) { // starts playing the video in a box under the stream list
-    frameDocument.getElementById("video-source").src = videoUrl;
-    frameDocument.getElementById("video-embed").load();
+    document.getElementById("video-source").src = videoUrl;
+    document.getElementById("video-embed").load();
     if (videoUrl == "") {
         document.getElementById("video-container").style.display = "none";
     }
@@ -421,14 +408,27 @@ function copyText(stringToCopy) { // copies text to a user's clipboard and pops 
 }
 
 // helper functions to simplify main functions
-function getPage(url) { // gets a string of the html of the page at the url passed in
+function getPage(url, async=false) { // gets a string of the html of the page at the url passed in
     console.log("started loading " + url);
     let startTime = Date.now();
     let xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("GET", url, false); // false for synchronous request; doesn't matter if UI freezes
-    xmlHttp.send(null);
-    console.log("resource load time: " + (Date.now() - startTime));
-    return xmlHttp.responseText;
+
+    if (async) {
+        xmlHttp.open("GET", url, true);
+        xmlHttp.onreadystatechange = function() {
+            if (xmlHttp.readyState === XMLHttpRequest.DONE) {
+                console.log("resource load time: " + (Date.now() - startTime));
+                async(xmlHttp.responseText);
+            }
+        }
+        xmlHttp.send(null);
+    }
+    else {
+        xmlHttp.open("GET", url, false); // false for synchronous request
+        xmlHttp.send(null);
+        console.log("resource load time: " + (Date.now() - startTime));
+        return xmlHttp.responseText;
+    }
 }
 
 function getSubstrings(searchStr, startStr, endStr, strCount = 1) { // [startStr ***]endStr
@@ -461,7 +461,7 @@ function toggleMenu() {
     if (document.getElementById("menu-popup").style.top === "20px") {
         slideOutMenu();
     }
-    else { /* first time top is unset, so show menu */
+    else { // first time top is unset, so show menu
         slideInMenu();
     }
 }

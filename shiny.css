@@ -243,10 +243,10 @@ button:hover:after { /* hover text */
 }
 button.search { /* button to initiate search */
     position: relative;
-    top: 3px;
+    top: 6px;
     height: 40px;
     width: 40px;
-    padding-top: 5px;
+    padding-top: 0;
     border-width: 3px;
     border-color: #c01050;
     border-radius: 6px;
