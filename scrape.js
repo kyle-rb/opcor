@@ -42,6 +42,7 @@ let resultList = []; // list of pairs containing show/movie names and urls
 let episodeList = []; // list of pairs containing episode names and ids
 let streamList = []; // list of pairs containing string quality identifiers and urls
 
+let hashInputString; // this is the value of a string that should be retrieved from version.json
 let _x, _y; // these catch the values for the script that gets 'eval'ed; they have to be up here
 let openloadHexString = "", openloadStreamUrl = ""; // input and output for Openload
 var z = 'hexid'; // fake id for Openload
@@ -171,6 +172,7 @@ function retrieveEpisodeList(episodesPage) { // gets episodes of a tv show and s
             episodeList[i] = [titleLists[hostIndex][i], idLists[hostIndex][i]];
         }
     }
+    console.log(idLists);
 
     if (episodesPage.indexOf(tvShowIndicator) !== -1) { // if it's a tv show
         displayEpisodeList();
@@ -184,7 +186,13 @@ function displayEpisodeList() { // displays the contents of episodeList
     embedVideo(""); // hide the video container
     document.getElementById("back-button").style.visibility = "visible"; // show back button
     document.getElementById("settings-button").style.visibility = "hidden"; // hide settings button
-    let displayText = resultList[pageHistory.resultIndex][0]; // show/movie name
+    let titleList = resultList[pageHistory.resultIndex][0].split(" ");
+    let seasonNum = 1; // if there's no season number, it should be season 1
+    if (titleList[titleList.length-1] < 99)
+        seasonNum = titleList.pop(); // if last char is season number
+    let wikiLink = "https://en.wikipedia.org/wiki/Special:Search?search=list+of+"
+        + titleList.join('+') + "+episodes";
+    let displayText = `<a href="${wikiLink}" target="blank">${resultList[pageHistory.resultIndex][0]}</a>`; // show/movie name with wikipedia link
 
     for (let i = 0; i < episodeList.length; i++) {
         displayText += `<div class="result-box" style="animation-delay:${((i%7/10)-0.3)}s;" 
@@ -237,18 +245,18 @@ function retrieveVideoStreams(episodeIndex) { // gets streams for a video and sa
     // otherwise normal time works
     hourTimestamp *= (60 * 60); // make it a normal unix seconds timestamp
 
-    let thisOneWeirdString = "ypYZrEpHb"; // stop hardcoding this
-    let hashParam = hashString(thisOneWeirdString);
+    let hashParam = hashString(hashInputString);
     let properties = ["id",      "server", "update", "ts"]
     let values =     [episodeId, serverId, "0",      hourTimestamp];
     for (var i = 0; i < properties.length; i++) {
         var charCodeSum = 0;
-        var propNameAndValue = thisOneWeirdString + properties[i] + values[i];
+        var propNameAndValue = hashInputString + properties[i] + values[i];
         for (var j = 0; j < propNameAndValue.length; j++) {
             charCodeSum += propNameAndValue.charCodeAt(j);
         }
         hashParam += hashString(charCodeSum.toString(16)); // hash the hex representation of the sum
     }
+    console.log(`https://fmovies.to/ajax/episode/info?ts=${hourTimestamp}&_=${hashParam}&id=${episodeId}&server=${serverId}&update=0`);
     requestFileWithReferer(`https://fmovies.to/ajax/episode/info?ts=${hourTimestamp}&_=${hashParam}&id=${episodeId}&server=${serverId}&update=0`, "https://fmovies.to", "writeVideoStreams");
 
     pageHistory.episodeIndex = episodeIndex;
@@ -269,7 +277,7 @@ function writeVideoStreams(streamInfoQuery) {
             embedPageUrl = "";
             streamSources = [];
         }
-        if (embedPageUrl.indexOf("openload") !== -1) { // don't continue if empty or streamango link
+        if (embedPageUrl && embedPageUrl.indexOf("openload") !== -1) { // ensure openload url
             let embedPage = getPage(embedPageUrl); // fuck async lol 
             openloadHexString = getSubstrings(embedPage, olHexStart, olHexEnd)[0];
             olHexId = getSubstrings(embedPage, olHexStart, ">")[0]; // get id so we can remove it
@@ -355,6 +363,11 @@ function checkForUpdate() { // download the version file to see if there is an u
         var popupText = updateMessage;
         slideInPopup(popupText, 20000); // show for 20 seconds
     }
+
+    hashInputString = newestVersionFile.hashInputString;
+    if (!hashInputString) hashInputString = currentVersionFile.hashInputString;
+    if (!hashInputString) hashInputString = "FuckYouBitch"; // go to default (old was "ypYZrEpHb")
+    
 }
 function performUpdate() { // initiates a new update (in the backend code)
     console.log("update started");
@@ -507,7 +520,7 @@ function selectText(element) { // selects the text of element
     }
 }
 
-function hashString(str) { // fmovies has a hash funchtion i guess
+function hashString(str) { // fmovies has a hash function i guess
     var hash = 0;
     for (var i = 0; i < str.length; i++) {
         hash += str.charCodeAt(i) + i;
