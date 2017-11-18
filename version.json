@@ -1,5 +1,5 @@
 {
-    "version": "1.2.0",
-    "hashInputString": "FuckYouBitch",
-    "message": "<div style='background-color:#e0e8ec'>switched streaming hosts, but only openload works for now. <a href='#' onclick=\"performUpdate()\">click here to update</a> or if that doesn't work, use the link at the bottom of the page to get a download</div>"
+    "version": "1.2.2",
+    "hashInputString": "iQDWcsGqN",
+    "message": "<div style='background-color:#e0e8ec'>fixed openload URLs so streaming should work again. <a href='#' onclick=\"performUpdate()\">click here to update</a> or if that doesn't work, use the link at the bottom of the page to get a download</div>"
 }

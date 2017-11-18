@@ -70,7 +70,7 @@ function executeSearchFromBox() { // gets search string from input box
     let encodedQueryString = queryString.trim().toLowerCase();
     encodedQueryString = encodedQueryString.replace(/[^A-Za-z0-9\s]/g,""); // remove special chars
     encodedQueryString = encodedQueryString.replace(/\s+/g, "+"); // replace spaces with pluses
-    let queryUrl = "https://fmovies.to/search?keyword=" + encodedQueryString;
+    let queryUrl = "https://bmovies.to/search?keyword=" + encodedQueryString;
     
     getPage(queryUrl, retrieveSearchResults);
 }
@@ -85,7 +85,7 @@ function retrieveSearchResults(resultsPage) { // searches for string and saves t
         let titleList = getSubstrings(resultsPage, resultTitleStart, resultTitleEnd, resultCount);
         resultList = [];
         for (let i = 0; i < resultCount; i++) {
-            resultList[i] = [titleList[i].slice(5), "https://fmovies.to" + urlList[i].slice(14)];
+            resultList[i] = [titleList[i].slice(5), "https://bmovies.to" + urlList[i].slice(14)];
         }
     }
 
@@ -246,8 +246,8 @@ function retrieveVideoStreams(episodeIndex) { // gets streams for a video and sa
     hourTimestamp *= (60 * 60); // make it a normal unix seconds timestamp
 
     let hashParam = hashString(hashInputString);
-    let properties = ["id",      "server", "update", "ts"]
-    let values =     [episodeId, serverId, "0",      hourTimestamp];
+    let properties = ["id",      "server", "ts"];
+    let values =     [episodeId, serverId, hourTimestamp]; // removed 'update=0' from this list
     for (var i = 0; i < properties.length; i++) {
         var charCodeSum = 0;
         var propNameAndValue = hashInputString + properties[i] + values[i];
@@ -256,8 +256,8 @@ function retrieveVideoStreams(episodeIndex) { // gets streams for a video and sa
         }
         hashParam += hashString(charCodeSum.toString(16)); // hash the hex representation of the sum
     }
-    console.log(`https://fmovies.to/ajax/episode/info?ts=${hourTimestamp}&_=${hashParam}&id=${episodeId}&server=${serverId}&update=0`);
-    requestFileWithReferer(`https://fmovies.to/ajax/episode/info?ts=${hourTimestamp}&_=${hashParam}&id=${episodeId}&server=${serverId}&update=0`, "https://fmovies.to", "writeVideoStreams");
+    console.log(`https://bmovies.to/ajax/episode/info?ts=${hourTimestamp}&_=${hashParam}&id=${episodeId}&server=${serverId}`);
+    requestFileWithReferer(`https://bmovies.to/ajax/episode/info?ts=${hourTimestamp}&_=${hashParam}&id=${episodeId}&server=${serverId}`, "https://bmovies.to", "writeVideoStreams");
 
     pageHistory.episodeIndex = episodeIndex;
     pageHistory.scrollPos = document.body.scrollTop;
@@ -277,6 +277,9 @@ function writeVideoStreams(streamInfoQuery) {
             embedPageUrl = "";
             streamSources = [];
         }
+        let rotateAmount = ("h".charCodeAt(0) - embedPageUrl.charCodeAt(1)) % 26; // for ".https"
+        if (rotateAmount < 0) rotateAmount += 26;
+        embedPageUrl = rotate(embedPageUrl.slice(1), rotateAmount);
         if (embedPageUrl && embedPageUrl.indexOf("openload") !== -1) { // ensure openload url
             let embedPage = getPage(embedPageUrl); // fuck async lol 
             openloadHexString = getSubstrings(embedPage, olHexStart, olHexEnd)[0];
@@ -366,8 +369,8 @@ function checkForUpdate() { // download the version file to see if there is an u
 
     hashInputString = newestVersionFile.hashInputString;
     if (!hashInputString) hashInputString = currentVersionFile.hashInputString;
-    if (!hashInputString) hashInputString = "FuckYouBitch"; // go to default (old was "ypYZrEpHb")
-    
+    if (!hashInputString) hashInputString = "iQDWcsGqN"; // go to default
+    // (old was "FuckYouBitch", and before that it was "ypYZrEpHb")
 }
 function performUpdate() { // initiates a new update (in the backend code)
     console.log("update started");
@@ -520,12 +523,27 @@ function selectText(element) { // selects the text of element
     }
 }
 
-function hashString(str) { // fmovies has a hash function i guess
+function hashString(str) { // all the url params are hashed to produce another url param
     var hash = 0;
     for (var i = 0; i < str.length; i++) {
         hash += str.charCodeAt(i) + i;
     }
     return hash;
+}
+
+function rotate(str, amount) {
+    var charCode, newStr = "";
+    for (var i = 0; i < str.length; i++) {
+        charCode = str.charCodeAt(i);
+        if (charCode > 64 && charCode < 91) {
+            charCode = (charCode - 65 + amount) % 26 + 65;
+        }
+        else if (charCode > 96 && charCode < 123) {
+            charCode = (charCode - 97 + amount) % 26 + 97;
+        }
+        newStr += String.fromCharCode(charCode);
+    }
+    return newStr;
 }
 
 // this is to avoid a thing where JSFuck gets 'p' from the fourth letter in http:// or https://, but

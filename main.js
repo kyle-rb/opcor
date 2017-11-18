@@ -9,7 +9,7 @@ let mainWindow;
 function createWindow() {
     mainWindow = new BrowserWindow({width: 800, height: 600, icon:"img/opcor-icon.png"});
     mainWindow.loadURL("file://" + __dirname + "/index.html", {
-        extraHeaders: "Referer: https://fmovies.to", // spoof http header
+        extraHeaders: "Referer: https://bmovies.to", // spoof http header
         httpReferrer: "test http referrer string"
     }); // "httpReferrer" option wasn't working
     mainWindow.on("closed", function() {
