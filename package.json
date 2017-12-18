@@ -1,6 +1,6 @@
 {
     "name": "Opcor",
-    "version": "1.2.2",
+    "version": "1.2.4",
     "description": "An application that lets you search for videos.",
     "main": "main.js",
     "scripts": {

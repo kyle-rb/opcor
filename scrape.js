@@ -70,7 +70,7 @@ function executeSearchFromBox() { // gets search string from input box
     let encodedQueryString = queryString.trim().toLowerCase();
     encodedQueryString = encodedQueryString.replace(/[^A-Za-z0-9\s]/g,""); // remove special chars
     encodedQueryString = encodedQueryString.replace(/\s+/g, "+"); // replace spaces with pluses
-    let queryUrl = "https://bmovies.to/search?keyword=" + encodedQueryString;
+    let queryUrl = "https://bmovies.is/search?keyword=" + encodedQueryString;
     
     getPage(queryUrl, retrieveSearchResults);
 }
@@ -85,7 +85,7 @@ function retrieveSearchResults(resultsPage) { // searches for string and saves t
         let titleList = getSubstrings(resultsPage, resultTitleStart, resultTitleEnd, resultCount);
         resultList = [];
         for (let i = 0; i < resultCount; i++) {
-            resultList[i] = [titleList[i].slice(5), "https://bmovies.to" + urlList[i].slice(14)];
+            resultList[i] = [titleList[i].slice(5), "https://bmovies.is" + urlList[i].slice(14)];
         }
     }
 
@@ -256,8 +256,9 @@ function retrieveVideoStreams(episodeIndex) { // gets streams for a video and sa
         }
         hashParam += hashString(charCodeSum.toString(16)); // hash the hex representation of the sum
     }
-    console.log(`https://bmovies.to/ajax/episode/info?ts=${hourTimestamp}&_=${hashParam}&id=${episodeId}&server=${serverId}`);
-    requestFileWithReferer(`https://bmovies.to/ajax/episode/info?ts=${hourTimestamp}&_=${hashParam}&id=${episodeId}&server=${serverId}`, "https://bmovies.to", "writeVideoStreams");
+    let requestUrl = `https://bmovies.is/ajax/episode/info?ts=${hourTimestamp}&_=${hashParam}&id=${episodeId}&server=${serverId}`;
+    console.log(requestUrl);
+    requestFileWithReferer(requestUrl, requestUrl, "writeVideoStreams");
 
     pageHistory.episodeIndex = episodeIndex;
     pageHistory.scrollPos = document.body.scrollTop;
@@ -277,9 +278,11 @@ function writeVideoStreams(streamInfoQuery) {
             embedPageUrl = "";
             streamSources = [];
         }
-        let rotateAmount = ("h".charCodeAt(0) - embedPageUrl.charCodeAt(1)) % 26; // for ".https"
+        console.log("unrotated: " + embedPageUrl);
+        let rotateAmount = ("h".charCodeAt(0) - embedPageUrl.charCodeAt(0)) % 26; // for "https"
         if (rotateAmount < 0) rotateAmount += 26;
-        embedPageUrl = rotate(embedPageUrl.slice(1), rotateAmount);
+        embedPageUrl = rotate(embedPageUrl, rotateAmount); // no longer necessary, but doesn't hurt
+        console.log("fixed: " + embedPageUrl);
         if (embedPageUrl && embedPageUrl.indexOf("openload") !== -1) { // ensure openload url
             let embedPage = getPage(embedPageUrl); // fuck async lol 
             openloadHexString = getSubstrings(embedPage, olHexStart, olHexEnd)[0];
