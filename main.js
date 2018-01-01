@@ -11,7 +11,7 @@ function createWindow() {
                                     "web-preferences": {"web-security": false}});
     mainWindow.loadURL("file://" + __dirname + "/index.html", {
         extraHeaders: "Referrer Policy: origin",//"Referer: https://bmovies.is", // spoof http header
-        httpReferrer: "https://bmovies.is"
+        httpReferrer: "https://fmovies.to"
     }); // "httpReferrer" option isn't working
     mainWindow.on("closed", function() {
         mainWindow = null; // change this if we switch to multiple windows

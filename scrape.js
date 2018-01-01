@@ -50,7 +50,7 @@ function jQuery(input) { // this fakes jQuery for Openload to work
     if (input === document) {
         return { "ready": function(callback) { callback(); } };
     }
-    else if (input === "#streamurl") {
+    else if (input === "#streamuri") {
         return { "text": function(val) { openloadStreamUrl = val; } };
     }
     else if (input === '#hexid') {
@@ -70,8 +70,8 @@ function executeSearchFromBox() { // gets search string from input box
     let encodedQueryString = queryString.trim().toLowerCase();
     encodedQueryString = encodedQueryString.replace(/[^A-Za-z0-9\s]/g,""); // remove special chars
     encodedQueryString = encodedQueryString.replace(/\s+/g, "+"); // replace spaces with pluses
-    let queryUrl = "https://bmovies.is/search?keyword=" + encodedQueryString;
-    
+    let queryUrl = "https://fmovies.to/search?keyword=" + encodedQueryString;
+
     getPage(queryUrl, retrieveSearchResults);
 }
 
@@ -85,7 +85,7 @@ function retrieveSearchResults(resultsPage) { // searches for string and saves t
         let titleList = getSubstrings(resultsPage, resultTitleStart, resultTitleEnd, resultCount);
         resultList = [];
         for (let i = 0; i < resultCount; i++) {
-            resultList[i] = [titleList[i].slice(5), "https://bmovies.is" + urlList[i].slice(14)];
+            resultList[i] = [titleList[i].slice(5), "https://fmovies.to" + urlList[i].slice(14)];
         }
     }
 
@@ -103,7 +103,7 @@ function displaySearchResults() { // displays the contents of resultsList
     else {
         displayText = "are any of these the thing you wanted to watch?<br/><br/>";
         for (var i = 0; i < resultList.length; i++) {
-            displayText += `<div class="result-box" style="animation-delay:${((i%7/10)-0.3)}s;" 
+            displayText += `<div class="result-box" style="animation-delay:${((i%7/10)-0.3)}s;"
             onclick="getEpisodeListPage(${i});">${resultList[i][0]}</div>`;
         }
         displayText += "<br/>if it's not one of those, then either it's not on there, or you"
@@ -111,7 +111,7 @@ function displaySearchResults() { // displays the contents of resultsList
     }
     document.getElementById("results").innerHTML = displayText;
     document.body.scrollTop = 0;
-    
+
     pageHistory.state = STATES.SEARCH;
     pageHistory.resultIndex = -1;
     pageHistory.episodeIndex = -1;
@@ -195,12 +195,12 @@ function displayEpisodeList() { // displays the contents of episodeList
     let displayText = `<a href="${wikiLink}" target="blank">${resultList[pageHistory.resultIndex][0]}</a>`; // show/movie name with wikipedia link
 
     for (let i = 0; i < episodeList.length; i++) {
-        displayText += `<div class="result-box" style="animation-delay:${((i%7/10)-0.3)}s;" 
+        displayText += `<div class="result-box" style="animation-delay:${((i%7/10)-0.3)}s;"
         onclick="retrieveVideoStreams(${i});">${episodeList[i][0]}</div>`;
     }
 
     document.getElementById("results").innerHTML = displayText || "something went wrong";
-    
+
     if (pageHistory.state = STATES.STREAMS) {
         document.body.scrollTop = pageHistory.scrollPos;
     }
@@ -256,7 +256,7 @@ function retrieveVideoStreams(episodeIndex) { // gets streams for a video and sa
         }
         hashParam += hashString(charCodeSum.toString(16)); // hash the hex representation of the sum
     }
-    let requestUrl = `https://bmovies.is/ajax/episode/info?ts=${hourTimestamp}&_=${hashParam}&id=${episodeId}&server=${serverId}`;
+    let requestUrl = `https://fmovies.to/ajax/episode/info?ts=${hourTimestamp}&_=${hashParam}&id=${episodeId}&server=${serverId}`;
     console.log(requestUrl);
     requestFileWithReferer(requestUrl, requestUrl, "writeVideoStreams");
 
@@ -284,7 +284,7 @@ function writeVideoStreams(streamInfoQuery) {
         embedPageUrl = rotate(embedPageUrl, rotateAmount); // no longer necessary, but doesn't hurt
         console.log("fixed: " + embedPageUrl);
         if (embedPageUrl && embedPageUrl.indexOf("openload") !== -1) { // ensure openload url
-            let embedPage = getPage(embedPageUrl); // fuck async lol 
+            let embedPage = getPage(embedPageUrl); // fuck async lol
             openloadHexString = getSubstrings(embedPage, olHexStart, olHexEnd)[0];
             olHexId = getSubstrings(embedPage, olHexStart, ">")[0]; // get id so we can remove it
             openloadHexString = openloadHexString.slice(olHexId.length + 1); // remove id
@@ -422,7 +422,7 @@ function copyText(stringToCopy) { // copies text to a user's clipboard and pops 
     selectText("select-box");
     document.execCommand("copy", false, null); // copies whatever text is selected
     selectBox.innerHTML = "";
-    
+
     slideInPopup("link copied to clipboard", 2000); // show for 2 seconds
 }
 
