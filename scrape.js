@@ -50,11 +50,15 @@ function jQuery(input) { // this fakes jQuery for Openload to work
     if (input === document) {
         return { "ready": function(callback) { callback(); } };
     }
-    else if (input === "#streamuri") {
+    else if (input === "#streamurl" || input === "#streamuri" || input === "#streamurj") {
         return { "text": function(val) { openloadStreamUrl = val; } };
     }
     else if (input === '#hexid') {
         return { "text": function() { return openloadHexString; } };
+    }
+    else {
+        console.log("unexpected query selector in fake jQuery: " + input);
+        return { "text": function(val) { openloadStreamUrl = val; } }; // pretend it's #streamurl
     }
 }
 var $ = jQuery;
@@ -278,11 +282,11 @@ function writeVideoStreams(streamInfoQuery) {
             embedPageUrl = "";
             streamSources = [];
         }
-        console.log("unrotated: " + embedPageUrl);
+        //console.log("unrotated: " + embedPageUrl);
         let rotateAmount = ("h".charCodeAt(0) - embedPageUrl.charCodeAt(0)) % 26; // for "https"
         if (rotateAmount < 0) rotateAmount += 26;
         embedPageUrl = rotate(embedPageUrl, rotateAmount); // no longer necessary, but doesn't hurt
-        console.log("fixed: " + embedPageUrl);
+        //console.log("fixed: " + embedPageUrl);
         if (embedPageUrl && embedPageUrl.indexOf("openload") !== -1) { // ensure openload url
             let embedPage = getPage(embedPageUrl); // fuck async lol
             openloadHexString = getSubstrings(embedPage, olHexStart, olHexEnd)[0];

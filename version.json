@@ -1,5 +1,5 @@
 {
-    "version": "1.2.5",
+    "version": "1.2.6",
     "hashInputString": "iQDWcsGqN",
-    "message": "<div style='background-color:#e0e8ec'>back to fmovies instead of bmovies and openload bug fixed. <a href='#' onclick=\"performUpdate()\">click here to update</a> or if that doesn't work, use the link at the bottom of the page to get a download</div>"
+    "message": "<div style='background-color:#e0e8ec'>another openload bug fixed. <a href='#' onclick=\"performUpdate()\">click here to update</a> or if that doesn't work, use the link at the bottom of the page to get a download</div>"
 }
