@@ -1,5 +1,6 @@
 {
-    "version": "1.2.6",
+    "version": "1.2.8",
+    "baseDomain": "https://fmovies.to",
     "hashInputString": "iQDWcsGqN",
-    "message": "<div style='background-color:#e0e8ec'>another openload bug fixed. <a href='#' onclick=\"performUpdate()\">click here to update</a> or if that doesn't work, use the link at the bottom of the page to get a download</div>"
+    "message": "<div style='background-color:#e0e8ec'>moved to new domain. <a href='#' onclick=\"performUpdate()\">click here to update</a> or if that doesn't work, use the link at the bottom of the page to get a download</div>"
 }

@@ -31,6 +31,8 @@ const olScriptStart = 'var _0x9495='; // could change if they redo the obfuscati
 const olScriptEnd = '}});';
 
 // global variables - hold variables that need to be remembered between functions
+let baseDomain; // this gets set when the version file is downloaded
+
 let pageHistory = { state: STATES.SEARCH,
                     searchString: "",
                     resultIndex: -1,
@@ -74,7 +76,7 @@ function executeSearchFromBox() { // gets search string from input box
     let encodedQueryString = queryString.trim().toLowerCase();
     encodedQueryString = encodedQueryString.replace(/[^A-Za-z0-9\s]/g,""); // remove special chars
     encodedQueryString = encodedQueryString.replace(/\s+/g, "+"); // replace spaces with pluses
-    let queryUrl = "https://fmovies.to/search?keyword=" + encodedQueryString;
+    let queryUrl = baseDomain + "/search?keyword=" + encodedQueryString;
 
     getPage(queryUrl, retrieveSearchResults);
 }
@@ -89,7 +91,7 @@ function retrieveSearchResults(resultsPage) { // searches for string and saves t
         let titleList = getSubstrings(resultsPage, resultTitleStart, resultTitleEnd, resultCount);
         resultList = [];
         for (let i = 0; i < resultCount; i++) {
-            resultList[i] = [titleList[i].slice(5), "https://fmovies.to" + urlList[i].slice(14)];
+            resultList[i] = [titleList[i].slice(5), baseDomain + urlList[i].slice(14)];
         }
     }
 
@@ -260,7 +262,7 @@ function retrieveVideoStreams(episodeIndex) { // gets streams for a video and sa
         }
         hashParam += hashString(charCodeSum.toString(16)); // hash the hex representation of the sum
     }
-    let requestUrl = `https://fmovies.to/ajax/episode/info?ts=${hourTimestamp}&_=${hashParam}&id=${episodeId}&server=${serverId}`;
+    let requestUrl = `${baseDomain}/ajax/episode/info?ts=${hourTimestamp}&_=${hashParam}&id=${episodeId}&server=${serverId}`;
     console.log(requestUrl);
     requestFileWithReferer(requestUrl, requestUrl, "writeVideoStreams");
 
@@ -373,6 +375,10 @@ function checkForUpdate() { // download the version file to see if there is an u
         var popupText = updateMessage;
         slideInPopup(popupText, 20000); // show for 20 seconds
     }
+
+    baseDomain = newestVersionFile.baseDomain;
+    if (!baseDomain) baseDomain = currentVersionFile.baseDomain;
+    if (!baseDomain) baseDomain = "https://fmovies.to"; // go to default
 
     hashInputString = newestVersionFile.hashInputString;
     if (!hashInputString) hashInputString = currentVersionFile.hashInputString;
