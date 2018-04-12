@@ -25,7 +25,7 @@ const episodeTitleStart = '">'; // will result in 3 extra strings at the start o
 const episodeTitleEnd = '<';
 const hostNameStart = 'fa-server"></i> ';
 const hostNameEnd = ' <';
-const olHexStart = '<span style="" id="';
+const olHexStart = '<p style="" id="';
 const olHexEnd = '</';
 const olScriptStart = 'var _0x9495='; // could change if they redo the obfuscation
 const olScriptEnd = '}});';
@@ -47,7 +47,7 @@ let streamList = []; // list of pairs containing string quality identifiers and 
 let hashInputString; // this is the value of a string that should be retrieved from version.json
 let _x, _y; // these catch the values for the script that gets 'eval'ed; they have to be up here
 let openloadHexString = "", openloadStreamUrl = ""; // input and output for Openload
-var z = 'hexid'; // fake id for Openload
+var z = 'hexid', ffff = 'hexid'; // fake id for Openload
 function jQuery(input) { // this fakes jQuery for Openload to work
     if (input === document) {
         return { "ready": function(callback) { callback(); } };
@@ -60,6 +60,7 @@ function jQuery(input) { // this fakes jQuery for Openload to work
     }
     else {
         console.log("unexpected query selector in fake jQuery: " + input);
+        // turns out they swapped out #streamurl for something else, so this is the lazy workaround
         return { "text": function(val) { openloadStreamUrl = val; } }; // pretend it's #streamurl
     }
 }
@@ -298,11 +299,15 @@ function writeVideoStreams(streamInfoQuery) {
             if (openloadHexString && openloadScript) {
                 eval(openloadScript + olScriptEnd); // this sets openloadStreamUrl
             }
+            else console.log("hex string or script not valid");
             if (openloadStreamUrl) {
                 streamSources = [{
                     "file": `https://openload.co/stream/${openloadStreamUrl}?mime=true`
                 }];
             }
+        }
+        else {
+            console.log("URL received from request is not an openload.co page");
         }
     }
     openloadHexString = "";
