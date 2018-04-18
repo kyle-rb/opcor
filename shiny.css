@@ -117,6 +117,10 @@ input[type="radio"]:checked:after {
     animation-duration: 1.2s;
     animation-timing-function: linear;
 }
+.result-box.prevnext {
+    height: 42px;
+    padding: 6px;
+}
 .alert-spacer, .bookmark-spacer { /* wraps around the popup box to center it */
     position: relative;
     height: 0;
@@ -135,8 +139,8 @@ input[type="radio"]:checked:after {
     background-color: #e0e8ec;
 }
 #alert-popup { /* info box that slides in from the top and back out */
-    top: -120px;
-    height: 60px;
+    top: -140px;
+    height: 100px;
     width: 400px;
     text-align: center;
     z-index: 2;
@@ -313,6 +317,22 @@ button.copy:hover:after { content: "copy a link to this video to your clipboard"
 .arr { /* box to rotate arrow inside button */
     transform: translate(3px, -22px) rotate(90deg);
 }
+button.prev, button.next {
+    height: 30px;
+    width: 48px;
+    margin: 6px;
+    border-width: 3px;
+    border-color: #c01050;
+    border-radius: 4px;
+    font-size: 20pt;
+    font-weight: bold;
+    color: #ffffff;
+    line-height: 10pt;
+    background-color: #c80058;
+}
+button.prev { float: left; }
+button.next { float: right; }
+
 img.logo { /* contains logo; expands to width of container */
     float: left;
     width: 270px;

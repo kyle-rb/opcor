@@ -346,6 +346,19 @@ function displayVideoStreams() { // displays the contents of streamList
             <button class="window"></button></a>
             <button class="copy" onclick="copyText('${streamList[i][1]}');"></button></div>`;
         }
+        // add in prev and next buttons
+        let prev = pageHistory.episodeIndex - 1;
+        let next = pageHistory.episodeIndex + 1;
+        let btns = "";
+        if (prev >= 0) { // add prev
+            btns += `<button class="prev" onclick="retrieveVideoStreams(${prev})">&larr;</button>`;
+        }
+        if (next < episodeList.length) { // add next
+            btns += `<button class="next" onclick="retrieveVideoStreams(${next})">&rarr;</button>` //+ `<button class=""></button>`;
+        }
+        if ((pageHistory.episodeIndex != -1) && btns) { // add box if tv show with prev and/or next
+            displayText += `<div class="result-box prevnext" style="cursor:default;">${btns}</div>`;
+        }
     }
     document.getElementById("results").innerHTML = displayText;
     document.body.scrollTop = 0;
