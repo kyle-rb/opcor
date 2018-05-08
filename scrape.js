@@ -501,7 +501,7 @@ function slideInPopup(popupMessage, popupDuration) { // slides in popup from the
     let popupBox = document.getElementById("alert-popup");
     popupBox.innerHTML = popupMessage;
     popupBox.style.top = "20px";
-    setTimeout(function(){ popupBox.style.top = "-120px" }, popupDuration);
+    setTimeout(function(){ popupBox.style.top = "-140px" }, popupDuration);
 }
 
 function toggleMenu() {
