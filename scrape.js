@@ -241,7 +241,8 @@ function retrieveVideoStreams(episodeIndex) { // gets streams for a video and sa
 
     // the timestamp follows weird rules
     let hourTimestamp = Math.floor(Date.now() / (60 * 60 * 1000)); // hours since 1970
-    let hourOfDay = hourTimestamp % 24 - 4; // hour of day on 24 hour clock in EST
+    let hourOfDay = (hourTimestamp - 4) % 24; // hour of day on 24 hour clock in EST
+    console.log("hourTimestamp: " + hourTimestamp);
     console.log("hourOfDay: " + hourOfDay);
     if (hourOfDay === 1) { // 1AM
         hourTimestamp += 12; // plus 12 hours
@@ -252,17 +253,28 @@ function retrieveVideoStreams(episodeIndex) { // gets streams for a video and sa
     // otherwise normal time works
     hourTimestamp *= (60 * 60); // make it a normal unix seconds timestamp
 
+    console.log("\n<~~ START HASH LOGGING ~~>");
+    console.log("input string: " + hashInputString);
     let hashParam = hashString(hashInputString);
+    console.log("base param: " + hashParam);
     let properties = ["id",      "server", "ts"];
     let values =     [episodeId, serverId, hourTimestamp]; // removed 'update=0' from this list
     for (var i = 0; i < properties.length; i++) {
         var charCodeSum = 0;
-        var propNameAndValue = hashInputString + properties[i] + values[i];
-        for (var j = 0; j < propNameAndValue.length; j++) {
-            charCodeSum += propNameAndValue.charCodeAt(j);
+        var propertyPadded = hashInputString + properties[i];
+        var valueString = values[i].toString(10);
+        console.log(propertyPadded, valueString);
+        for (var j = 0; j < Math.max(propertyPadded.length, valueString.length); j++) {
+            charCodeSum += propertyPadded.charCodeAt(j) || j; // if one is shorter, pad with index
+            charCodeSum += valueString.charCodeAt(j) || j; // previously it was padded with 0
         }
+        console.log("charCodeSum: " + charCodeSum + " = " + charCodeSum.toString(16));
+        console.log("hash from " + properties[i] + "=" + values[i] + ": " + hashString(charCodeSum.toString(16)));
         hashParam += hashString(charCodeSum.toString(16)); // hash the hex representation of the sum
+        console.log("new hash sum param: " + hashParam);
     }
+    console.log("<~~ END HASH LOGGING ~~>\n")
+
     let requestUrl = `${baseDomain}/ajax/episode/info?ts=${hourTimestamp}&_=${hashParam}&id=${episodeId}&server=${serverId}`;
     console.log(requestUrl);
     requestFileWithReferer(requestUrl, requestUrl, "writeVideoStreams");
@@ -396,12 +408,16 @@ function checkForUpdate() { // download the version file to see if there is an u
 
     baseDomain = newestVersionFile.baseDomain;
     if (!baseDomain) baseDomain = currentVersionFile.baseDomain;
-    if (!baseDomain) baseDomain = "https://fmovies.to"; // go to default
+    if (!baseDomain) baseDomain = "https://fmovies.se"; // go to default
 
     hashInputString = newestVersionFile.hashInputString;
     if (!hashInputString) hashInputString = currentVersionFile.hashInputString;
-    if (!hashInputString) hashInputString = "iQDWcsGqN"; // go to default
-    // (old was "FuckYouBitch", and before that it was "ypYZrEpHb")
+    if (!hashInputString) hashInputString = "wpa31KIY"; // go to default
+    // (old was "FuckYouBitch", and before that it was "ypYZrEpHb", and a couple others)
+    // to figure out the new value, break on XHR for /ajax/episode/info
+    // and then jQuery has a "Ul" function or something before ajax
+    // or search for "Object[" in all.js, since the hashing function needs to do
+    //   Object.prototype.hasOwnProperty.call() when generating the hash
 }
 function performUpdate() { // initiates a new update (in the backend code)
     console.log("update started");
