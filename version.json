@@ -1,6 +1,9 @@
 {
-    "version": "1.3.2",
+    "version": "1.3.4",
     "baseDomain": "https://www6.fmovies.se",
-    "hashInputString": "4VzoWfBy",
-    "message": "<div style='background-color:#e0e8ec'>fixed issue  <a href='#' onclick=\"performUpdate()\">click here to update</a> or if that doesn't work, use the link at the bottom of the page to get a download</div>"
+    "hashInputString": "6c0df0f1",
+    "hashIndexMultiplier": "1",
+    "hashIndexAdditive": "1",
+    "hashOperation": "+",
+    "message": "<div style='background-color:#e0e8ec'>I will never be blocked <a href='#' onclick=\"performUpdate()\">click here to update</a> or if that doesn't work, use the link at the bottom of the page to get a download</div>"
 }

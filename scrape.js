@@ -44,7 +44,9 @@ let resultList = []; // list of pairs containing show/movie names and urls
 let episodeList = []; // list of pairs containing episode names and ids
 let streamList = []; // list of pairs containing string quality identifiers and urls
 
-let hashInputString; // this is the value of a string that should be retrieved from version.json
+// variables pertaining to the hash calculation
+let hashInputString, hashIndexMultiplier, hashIndexAdditive, hashOperation;
+
 let _x, _y; // these catch the values for the script that gets 'eval'ed; they have to be up here
 let openloadHexString = "", openloadStreamUrl = ""; // input and output for Openload
 var z = 'hexid', ffff = 'hexid'; // fake id for Openload
@@ -239,7 +241,7 @@ function retrieveVideoStreams(episodeIndex) { // gets streams for a video and sa
         return;
     }
 
-    // the timestamp follows weird rules
+    // the timestamp follows weird rules...
     let hourTimestamp = Math.floor(Date.now() / (60 * 60 * 1000)); // hours since 1970
     let hourOfDay = (hourTimestamp - 4) % 24; // hour of day on 24 hour clock in EST
     console.log("hourTimestamp: " + hourTimestamp);
@@ -265,8 +267,12 @@ function retrieveVideoStreams(episodeIndex) { // gets streams for a video and sa
         var valueString = values[i].toString(10);
         console.log(propertyPadded, valueString);
         for (var j = 0; j < Math.max(propertyPadded.length, valueString.length); j++) {
-            charCodeSum += propertyPadded.charCodeAt(j) || j; // if one is shorter, pad with index
-            charCodeSum += valueString.charCodeAt(j) || j; // previously it was padded with 0
+            // there's some logic above that determines whether to use += or *=
+            // as well as what to pad the string with if there's no charCodeAt a given index
+            charCodeSum = hashOperation(charCodeSum, propertyPadded.charCodeAt(j)
+                                                  || j * hashIndexMultiplier + hashIndexAdditive);
+            charCodeSum = hashOperation(charCodeSum, valueString.charCodeAt(j)
+                                                  || j * hashIndexMultiplier + hashIndexAdditive);
         }
         console.log("charCodeSum: " + charCodeSum + " = " + charCodeSum.toString(16));
         console.log("hash from " + properties[i] + "=" + values[i] + ": " + hashString(charCodeSum.toString(16)));
@@ -410,10 +416,37 @@ function checkForUpdate() { // download the version file to see if there is an u
     if (!baseDomain) baseDomain = currentVersionFile.baseDomain;
     if (!baseDomain) baseDomain = "https://fmovies.se"; // go to default
 
-    hashInputString = newestVersionFile.hashInputString;
-    if (!hashInputString) hashInputString = currentVersionFile.hashInputString;
-    if (!hashInputString) hashInputString = "wpa31KIY"; // go to default
-    // (old was "FuckYouBitch", and before that it was "ypYZrEpHb", and a couple others)
+    hashInputString = newestVersionFile.hashInputString
+                   || currentVersionFile.hashInputString
+                   || ""; // gets hashed along with URL params
+
+    hashIndexMultiplier = Number(newestVersionFile.hashIndexMuliplier)
+                       || Number(currentVersionFile.hashIndexMultiplier)
+                       || 1; // in case of no char in one string, multiply index by this
+
+    hashIndexAdditive = Number(newestVersionFile.hashIndexAdditive)
+                     || Number(currentVersionFile.hashIndexAdditive)
+                     || 0; // then, add this to the scaled index and use instead of char code
+
+    let options = [newestVersionFile.hashOperation, currentVersionFile.hashOperation, "+"];
+    hashOperation = options.reduce(function(result, val) {
+        if (result) return result; // if already decoded a valid value, return and move on
+        switch (val) {
+            case "+":
+                return function(base, augment) { return base + augment; };
+            case "-": // I doubt this would be used
+                return function(base, augment) { return base - augment; };
+            case "*":
+                return function(base, augment) { return base * augment; };
+            case "/": // I really doubt this would be used
+                return function(base, augment) { return base / augment; };
+            default:
+                return null; // if the value was none of these, then return null
+        }
+    }, null);
+    
+    // site maintainer these values/calculations for the '_' URL param
+
     // to figure out the new value, break on XHR for /ajax/episode/info
     // and then jQuery has a "Ul" function or something before ajax
     // or search for "Object[" in all.js, since the hashing function needs to do
