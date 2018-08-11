@@ -1,9 +1,9 @@
 {
-    "version": "1.3.4",
-    "baseDomain": "https://www6.fmovies.se",
-    "hashInputString": "6c0df0f1",
+    "version": "1.3.5",
+    "baseDomain": "https://www7.fmovies.se",
+    "hashInputString": "ee7b3c04",
     "hashIndexMultiplier": "1",
-    "hashIndexAdditive": "1",
-    "hashOperation": "+",
-    "message": "<div style='background-color:#e0e8ec'>I will never be blocked <a href='#' onclick=\"performUpdate()\">click here to update</a> or if that doesn't work, use the link at the bottom of the page to get a download</div>"
+    "hashIndexAdditive": "0",
+    "hashOperation": "*",
+    "message": "<div style='background-color:#e0e8ec'>fixed backend compatibility issue <a href='#' onclick=\"performUpdate()\">click here to update</a> or if that doesn't work, use the link at the bottom of the page to get a download</div>"
 }

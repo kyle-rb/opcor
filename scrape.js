@@ -16,15 +16,15 @@ const resultUrlStart = 'poster" href="';
 const resultUrlEnd = '"';
 const resultTitleStart = 'alt="'; // might need to alter because newlines
 const resultTitleEnd = ' | ';
-const tvShowIndicator = 'name">TV-Series';
+const tvShowIndicator = 'name">TV-Series'; // doesn't work anymore
 const episodeSectionStart = 'fa-server'; // sections separating different hosts
-const episodeSectionEnd = '</div> </div>';
-const episodeIdStart = 'data-id="';
-const episodeIdEnd = '"';
-const episodeTitleStart = '">'; // will result in 3 extra strings at the start of the list
+const episodeSectionEnd = '<\\/div>\\n';
+const episodeIdStart = 'data-id=\\"';
+const episodeIdEnd = '\\"';
+const episodeTitleStart = '\\">'; // will result in 3 extra strings at the start of the list
 const episodeTitleEnd = '<';
-const hostNameStart = 'fa-server"></i> ';
-const hostNameEnd = ' <';
+const hostNameStart = 'fa-server\\"><\\/i>\\n';
+const hostNameEnd = '\\n';
 const olHexStart = '<p style="" id="';
 const olHexEnd = '</';
 const olScriptStart = 'var _0x9495='; // could change if they redo the obfuscation
@@ -132,7 +132,9 @@ function displaySearchResults() { // displays the contents of resultsList
 function getEpisodeListPage(resultIndex) {
     pageHistory.resultIndex = resultIndex;
     let episodeListUrl = resultList[resultIndex][1];
-    getPage(episodeListUrl, retrieveEpisodeList);
+    let tvShowId = episodeListUrl.split('.').pop(); // show id follows the last '.' in url
+
+    getPage(`${baseDomain}/ajax/film/servers/${tvShowId}`, retrieveEpisodeList);
 }
 
 function retrieveEpisodeList(episodesPage) { // gets episodes of a tv show and saves to episodeList
@@ -144,7 +146,7 @@ function retrieveEpisodeList(episodesPage) { // gets episodes of a tv show and s
     for (let i = 0; i < sections.length; i++) {
         episodeCount = (sections[i].match(/href/g)||[]).length; // episodes from this host
         idLists[i] = getSubstrings(sections[i], episodeIdStart, episodeIdEnd, episodeCount);
-        titleLists[i]= getSubstrings(sections[i], episodeTitleStart,episodeTitleEnd,episodeCount+3);
+        titleLists[i] = getSubstrings(sections[i],episodeTitleStart,episodeTitleEnd,episodeCount+3);
         titleLists[i] = titleLists[i].slice(3); // 3 extra matches at the beginning              ^
         for (let j = 0; j < episodeCount; j++) {
             titleLists[i][j] = "Episode " + titleLists[i][j].slice(episodeTitleStart.length);
@@ -159,13 +161,14 @@ function retrieveEpisodeList(episodesPage) { // gets episodes of a tv show and s
     }
     let hostMatchFunction = hostMatchFunctionObj[settings.host] || hostMatchFunctionObj["openload"];
     let hostList = getSubstrings(episodesPage, hostNameStart, hostNameEnd, hostCount);
+    console.log(hostList);
     let hostIndex = -1;
 
     console.log("host count: " + hostCount);
     console.log("episode count: " + episodeCount);
 
     for (let i = 0; i < hostList.length; i++) {
-        hostList[i] = hostList[i].slice(hostNameStart.length);
+        hostList[i] = hostList[i].slice(hostNameStart.length).trim();
 
         console.log(hostList[i]);
 
@@ -181,9 +184,12 @@ function retrieveEpisodeList(episodesPage) { // gets episodes of a tv show and s
             episodeList[i] = [titleLists[hostIndex][i], idLists[hostIndex][i]];
         }
     }
-    console.log(idLists);
+    else {
+        console.log("hostIndex === 0, something may have gone wrong");
+    }
 
-    if (episodesPage.indexOf(tvShowIndicator) !== -1) { // if it's a tv show
+    //if (episodesPage.indexOf(tvShowIndicator) !== -1) { // if it's a tv show
+    if (episodeList.length > 1) { // should mostly work fine, I think
         displayEpisodeList();
     }
     else { // if it's a movie
@@ -241,48 +247,14 @@ function retrieveVideoStreams(episodeIndex) { // gets streams for a video and sa
         return;
     }
 
-    // the timestamp follows weird rules...
-    let hourTimestamp = Math.floor(Date.now() / (60 * 60 * 1000)); // hours since 1970
-    let hourOfDay = (hourTimestamp - 4) % 24; // hour of day on 24 hour clock in EST
-    console.log("hourTimestamp: " + hourTimestamp);
-    console.log("hourOfDay: " + hourOfDay);
-    if (hourOfDay === 1) { // 1AM
-        hourTimestamp += 12; // plus 12 hours
-    }
-    else if ((hourOfDay >= 14 && hourOfDay <= 23) || hourOfDay === 0) { // 2PM - 12AM
-        hourTimestamp -= 12; // minus 12 hours
-    }
-    // otherwise normal time works
-    hourTimestamp *= (60 * 60); // make it a normal unix seconds timestamp
+    let hourTimestamp = getAlteredTimestamp();
 
-    console.log("\n<~~ START HASH LOGGING ~~>");
-    console.log("input string: " + hashInputString);
-    let hashParam = hashString(hashInputString);
-    console.log("base param: " + hashParam);
     let properties = ["id",      "server", "ts"];
     let values =     [episodeId, serverId, hourTimestamp]; // removed 'update=0' from this list
-    for (var i = 0; i < properties.length; i++) {
-        var charCodeSum = 0;
-        var propertyPadded = hashInputString + properties[i];
-        var valueString = values[i].toString(10);
-        console.log(propertyPadded, valueString);
-        for (var j = 0; j < Math.max(propertyPadded.length, valueString.length); j++) {
-            // there's some logic above that determines whether to use += or *=
-            // as well as what to pad the string with if there's no charCodeAt a given index
-            charCodeSum = hashOperation(charCodeSum, propertyPadded.charCodeAt(j)
-                                                  || j * hashIndexMultiplier + hashIndexAdditive);
-            charCodeSum = hashOperation(charCodeSum, valueString.charCodeAt(j)
-                                                  || j * hashIndexMultiplier + hashIndexAdditive);
-        }
-        console.log("charCodeSum: " + charCodeSum + " = " + charCodeSum.toString(16));
-        console.log("hash from " + properties[i] + "=" + values[i] + ": " + hashString(charCodeSum.toString(16)));
-        hashParam += hashString(charCodeSum.toString(16)); // hash the hex representation of the sum
-        console.log("new hash sum param: " + hashParam);
-    }
-    console.log("<~~ END HASH LOGGING ~~>\n")
+    let hashParam = getHashParam(properties, values);
 
     let requestUrl = `${baseDomain}/ajax/episode/info?ts=${hourTimestamp}&_=${hashParam}&id=${episodeId}&server=${serverId}`;
-    console.log(requestUrl);
+
     requestFileWithReferer(requestUrl, requestUrl, "writeVideoStreams");
 
     pageHistory.episodeIndex = episodeIndex;
@@ -603,6 +575,44 @@ function selectText(element) { // selects the text of element
     }
 }
 
+function getAlteredTimestamp() { // the timestamp follows weird rules...
+    let hourTimestamp = Math.floor(Date.now() / (60 * 60 * 1000)); // hours since 1970
+    let hourOfDay = (hourTimestamp - 4) % 24; // hour of day on 24 hour clock in EST
+
+    if (hourOfDay === 1) { // 1AM
+        hourTimestamp += 12; // plus 12 hours
+    }
+    else if ((hourOfDay >= 14 && hourOfDay <= 23) || hourOfDay === 0) { // 2PM - 12AM
+        hourTimestamp -= 12; // minus 12 hours
+    }
+    // otherwise normal time works
+    hourTimestamp *= (60 * 60); // make it a normal unix seconds timestamp (rounded to the hour)
+    return hourTimestamp;
+}
+
+function getHashParam(properties, values) { // generates the '_' url param, based on other params
+    let hashParam = hashString(hashInputString); // hardcoded base value to start with
+
+    for (var i = 0; i < properties.length; i++) {
+        var charCodeSum = 0;
+        var propertyPadded = hashInputString + properties[i];
+        var valueString = values[i].toString(10);
+        console.log(propertyPadded, valueString);
+        for (var j = 0; j < Math.max(propertyPadded.length, valueString.length); j++) {
+            // there's some logic on init that determines whether to use += or *=
+            // as well as what to pad the string with if there's no charCodeAt a given index
+            charCodeSum = hashOperation(charCodeSum, propertyPadded.charCodeAt(j)
+                                                  || j * hashIndexMultiplier + hashIndexAdditive);
+            charCodeSum = hashOperation(charCodeSum, valueString.charCodeAt(j)
+                                                  || j * hashIndexMultiplier + hashIndexAdditive);
+        }
+        console.log("charCodeSum: " + charCodeSum + " = " + charCodeSum.toString(16));
+        console.log("hash from " + properties[i] + "=" + values[i] + ": " + hashString(charCodeSum.toString(16)));
+        hashParam += hashString(charCodeSum.toString(16)); // hash the hex representation of the sum
+    }
+    return hashParam;
+}
+
 function hashString(str) { // all the url params are hashed to produce another url param
     var hash = 0;
     for (var i = 0; i < str.length; i++) {
@@ -641,6 +651,5 @@ function unescaee(str) {
 //
 // TODO:
 // add streamango support (or remove the embed thing as an option for real builds)
-// add next and previous buttons (push navs to popped-out window?)
 //
 // * * * * * * * * * * * * * * * * * * * *
