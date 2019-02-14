@@ -12,6 +12,14 @@ let requestFileWithReferer = electronMain.requestFileWithReferer;
 // global constants - denote start and end points of various parts of the page structure
 const STATES = Object.freeze({ SEARCH: 0, EPISODES: 1, STREAMS: 2 }); // states for pageHistory
 
+const cfVCStart = 'jschl_vc" value="'; // start of Cloudflare challenge "jschl_vc" param
+const cfVCEnd = '"';
+const cfPassStart = 'pass" value="'; // start of Cloudflare challenge "pass" param
+const cfPassEnd = '"';
+const cfScriptStart = 'var s,t,o,p,b,r,e,a,k,i,n,g,f, '; // start of Cf script
+const cfScriptEnd = 'a.value';
+const cfClipStart = ';'; // a certain piece must be clipped out of the script
+const cfClipEnd = '        ;';
 const resultUrlStart = 'poster" href="';
 const resultUrlEnd = '"';
 const resultTitleStart = 'alt="'; // might need to alter because newlines
@@ -360,6 +368,7 @@ function displayVideoStreams() { // displays the contents of streamList
 function pageLoaded() {
     checkForUpdate();
     getSettings();
+    solveCloudflareChallenge();
 }
 
 function checkForUpdate() { // download the version file to see if there is an update available
@@ -492,7 +501,7 @@ function getPage(url, async=false) { // gets a string of the html of the page at
         xmlHttp.send(null);
     }
     else {
-        xmlHttp.open("GET", url, false); // false for synchronous request
+        xmlHttp.open("GET", url, false); // false for synchronous requestx
         xmlHttp.send(null);
         console.log("resource load time: " + (Date.now() - startTime));
         return xmlHttp.responseText;
@@ -636,6 +645,54 @@ function rotate(str, amount) {
     return newStr;
 }
 
+function solveCloudflareChallenge() {
+    getPage(baseDomain + "/sw.js?12", function(challengePage) { // arbitrary file triggers challenge
+        if (challengePage.slice(0, 13) === "importScripts") {
+            console.log("Cloudflare challenge not necessary; done");
+            return;
+        }
+
+        let challengeVC = getSubstrings(challengePage, cfVCStart, cfVCEnd)[0]
+                          .slice(cfVCStart.length);
+        let challengePass = getSubstrings(challengePage, cfPassStart,cfPassEnd)[0]
+                            .slice(cfPassStart.length);
+        let challengeScript = getSubstrings(challengePage, cfScriptStart, cfScriptEnd)[0]
+                              .slice(cfScriptStart.length);
+        
+        let challengeBaseVariable = getSubstrings(challengeScript, "", "=")[0];
+        window[challengeBaseVariable] = undefined; // make sure the internal variable is a global
+
+        let lineCount = (challengeScript.match(/;/g)||[]).length;
+        challengeScript = getSubstrings(challengeScript, "", ";", lineCount).filter(function(line) {
+            let firstChar = line.trim()[0]; // filter out lines starting with a variable name
+            let secondChar = line.trim()[1]; // second char must be a separator
+            return !(
+                (secondChar === " " || secondChar === ".") &&
+                (firstChar === "t" || firstChar === "r" || firstChar === "a" || firstChar === "f")
+            );
+        }).join(";"); // and join the conforming lines back together
+
+        //console.log("doing eval now");
+        //console.log(challengeVC, challengePass, challengeScript);
+        eval(challengeScript); // evaluate challenge script
+        //console.log("challenge answer: " + window[challengeBaseVariable]);
+        let answerModifier = (baseDomain.length - "https://".length); // length of domain name
+        let answerKey = Object.keys(window[challengeBaseVariable])[0]; // key containing base answer
+        let baseAnswer = window[challengeBaseVariable][answerKey]; // value of that key
+        let challengeAnswer = +(baseAnswer.toFixed(10)) + answerModifier; // truncate base, modify
+
+        getPage(`${baseDomain}/cdn-cgi/l/chk_jschl?jschl_vc=${challengeVC}&pass=${challengePass}&jschl_answer=${challengeAnswer}`, function(response) {
+            if (response.slice(0, 13) === "importScripts") {
+                console.log("Cloudflare challenge successfully solved; headers should be set");
+            }
+            else {
+                console.log("Challenge required again");
+                //solveCloudflareChallenge();
+            }
+        });
+    });
+}
+
 // this is to avoid a thing where JSFuck gets 'p' from the fourth letter in http:// or https://, but
 // Electron uses file://, so 'p's are 'e's, and 'escape' and 'unescape' are 'escaee' and 'unescaee'
 // I hate JavaScript so goddamn much
@@ -651,5 +708,6 @@ function unescaee(str) {
 //
 // TODO:
 // add streamango support (or remove the embed thing as an option for real builds)
+//   not sure exactly what I mean by this... -KrB 10/17/18
 //
 // * * * * * * * * * * * * * * * * * * * *
