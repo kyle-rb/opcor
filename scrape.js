@@ -33,7 +33,7 @@ const episodeTitleStart = '\\">'; // will result in 3 extra strings at the start
 const episodeTitleEnd = '<';
 const hostNameStart = 'fa-server\\"><\\/i>\\n';
 const hostNameEnd = '\\n';
-const olHexStart = '<p style="" id="';
+const olHexStart = 'style="">';
 const olHexEnd = '</';
 const olScriptStart = 'var _0x9495='; // could change if they redo the obfuscation
 const olScriptEnd = '}});';
@@ -56,6 +56,7 @@ let streamList = []; // list of pairs containing string quality identifiers and 
 let hashInputString, hashIndexMultiplier, hashIndexAdditive, hashOperation;
 
 let _x, _y; // these catch the values for the script that gets 'eval'ed; they have to be up here
+let cc_cc_cc = 'hexid'; // must be equal to selector
 let openloadHexString = "", openloadStreamUrl = ""; // input and output for Openload
 var z = 'hexid', ffff = 'hexid'; // fake id for Openload
 function jQuery(input) { // this fakes jQuery for Openload to work
@@ -291,13 +292,16 @@ function writeVideoStreams(streamInfoQuery) {
         if (embedPageUrl && embedPageUrl.indexOf("openload") !== -1) { // ensure openload url
             let embedPage = getPage(embedPageUrl); // fuck async lol
             openloadHexString = getSubstrings(embedPage, olHexStart, olHexEnd)[0];
-            olHexId = getSubstrings(embedPage, olHexStart, ">")[0]; // get id so we can remove it
-            openloadHexString = openloadHexString.slice(olHexId.length + 1); // remove id
+            //olHexId = getSubstrings(embedPage, olHexStart, ">")[0]; // get id so we can remove it
+            openloadHexString = openloadHexString.slice(olHexStart.length); // remove id
             let openloadScript = getSubstrings(embedPage, olScriptStart, olScriptEnd)[0];
             if (openloadHexString && openloadScript) {
                 eval(openloadScript + olScriptEnd); // this sets openloadStreamUrl
             }
-            else console.log("hex string or script not valid");
+            else {
+                console.error("hex string or script not valid");
+                console.log("hex string:", openloadHexString);
+            }
             if (openloadStreamUrl) {
                 streamSources = [{
                     "file": `https://openload.co/stream/${openloadStreamUrl}?mime=true`
