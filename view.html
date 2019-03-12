@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>Opcor</title>
   <link rel="stylesheet" href="shiny.css">
-  <script type="text/javascript" src="vue.js"></script>
+  <script type="text/javascript" src="vue.min.js"></script>
   <script type="text/javascript" src="helper.js"></script>
   <script type="text/javascript" src="controller.js"></script>
   <script type="text/javascript" src="model.js"></script>
@@ -18,7 +18,7 @@
 
     <div class="banner"> <!-- contains alert popup, menu popup, and Opcor logo -->
       <div class="alert-spacer"> <!-- centers alert -->
-        <div class="alert-popup" :class="{ 'popup-visible': alertVisible }">{{ alertText }}</div>
+        <div class="alert-popup" :class="{ 'long': alertText.length > 50, 'popup-visible': alertText.length > 0 }" v-html="alertText"></div>
       </div>
       <div class="menu-popup" :class="{ 'popup-visible': menuVisible }">
         <div class="close-menu" @click="slideOutMenu">x</div>

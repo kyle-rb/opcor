@@ -157,6 +157,9 @@ input[type="radio"]:checked::after {
     z-index: 2;
     transition: top 0.5s;
 }
+.long { /* longer messages like "update necessary ..." as opposed to "text copied" */
+    height: 200px;
+}
 .bookmark-popup { /* box containing bookmarks */
     height: 400px;
     top: -640px;

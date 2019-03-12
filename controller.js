@@ -4,8 +4,6 @@ let app;
 document.addEventListener('DOMContentLoaded', init);
 
 function init() {
-  checkForUpdate();
-
   app = new Vue({
     el: '#opcor-app',
     data: {
@@ -21,7 +19,6 @@ function init() {
       streamList: [],
 
       alertText: '', // in popup notification
-      alertVisible: false,
       menuVisible: false,
 
       queryInput: '', // from search bar
@@ -91,7 +88,6 @@ function init() {
 
       toggleMenu: function() {
         this.menuVisible = !this.menuVisible;
-        console.log('changing menu visible to', this.menuVisible);
       },
       slideOutMenu: function() { // add functionality to save settings
         this.menuVisible = false;
@@ -99,11 +95,10 @@ function init() {
 
       showAlert: function(message, duration) { // duration in seconds
         this.alertText = message;
-        this.alertVisible = true;
-        setTimeout(() => dismissAlert(), duration * 1000);
+        setTimeout(() => this.dismissAlert(), duration * 1000);
       },
       dismissAlert: function() {
-        this.alertVisible = false;
+        this.alertText = '';
       },
     },
     computed: {
@@ -152,10 +147,12 @@ function init() {
         return 'animation-delay:' + delay + 's;';
       },
       windowUrl: function(plainUrl) {
-        return 'window.html#' + plainUrl; // will this just werk with blob:// urls?
+        return 'window.html#' + plainUrl;
       },
     },
   });
+
+  checkForUpdate();
 }
 
 function showAlert(message, duration) { // for visibility outside of app
