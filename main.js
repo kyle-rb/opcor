@@ -10,10 +10,7 @@ function createWindow() {
     mainWindow = new BrowserWindow({width: 800, height: 600, icon:"img/opcor-icon.png",
                                     "webPreferences": {"webSecurity": false}});
     
-    mainWindow.loadURL("file://" + __dirname + "/index.html", {
-        extraHeaders: "Referrer Policy: origin",//"Referer: https://bmovies.is", // spoof header
-        httpReferrer: "https://fmovies.to"
-    }); // "httpReferrer" option isn't actually working
+    mainWindow.loadURL("file://" + __dirname + "/view.html");
 
     mainWindow.on("closed", function() {
         mainWindow = null; // change this if we switch to multiple windows

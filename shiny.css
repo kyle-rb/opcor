@@ -23,7 +23,7 @@ input[type="radio"] {
 input[type="radio"]:focus {
     outline-style: none;
 }
-input[type="radio"]:after {
+input[type="radio"]::after {
     content: "●";
     display: block;
     position: absolute;
@@ -41,7 +41,7 @@ input[type="radio"]:after {
     overflow: hidden;
     transition: font-size 0.5s;
 }
-input[type="radio"]:checked:after {
+input[type="radio"]:checked::after {
     font-size: 50px;
 }
 ::selection {
@@ -94,8 +94,10 @@ input[type="radio"]:checked:after {
 #video-container {
     display: none;
 }
-#video-embed {
+.video-embed {
     width: 100%;
+    height: 60vw;
+    border: 0;
 }
 .content-box { /* curved box with padding around text; fills container */
     position: relative;
@@ -121,6 +123,15 @@ input[type="radio"]:checked:after {
     height: 42px;
     padding: 6px;
 }
+.result-box.tvshow, .result-box.movie{
+    background-image: url("img/tv-show.svg");
+    background-repeat: no-repeat;
+    background-size: 2em 1.5em;
+    background-position: right;
+}
+.result-box.tvshow { background-image: url("img/tv-show.svg"); }
+.result-box.movie { background-image: url("img/movie.svg"); }
+
 .alert-spacer, .bookmark-spacer { /* wraps around the popup box to center it */
     position: relative;
     height: 0;
@@ -130,7 +141,7 @@ input[type="radio"]:checked:after {
 .alert-spacer {
     width: 400px;
 }
-#alert-popup, #bookmark-popup, #menu-popup { /* boxes that slide in from the top */
+.alert-popup, .bookmark-popup, .menu-popup { /* boxes that slide in from the top */
     position: fixed;
     padding: 16px;
     border-radius: 4px;
@@ -138,7 +149,7 @@ input[type="radio"]:checked:after {
     font-size: 16pt;
     background-color: #e0e8ec;
 }
-#alert-popup { /* info box that slides in from the top and back out */
+.alert-popup { /* info box that slides in from the top and back out */
     top: -140px;
     height: 100px;
     width: 400px;
@@ -146,7 +157,7 @@ input[type="radio"]:checked:after {
     z-index: 2;
     transition: top 0.5s;
 }
-#bookmark-popup { /* box containing bookmarks */
+.bookmark-popup { /* box containing bookmarks */
     height: 400px;
     top: -640px;
     left: 60px;
@@ -156,7 +167,7 @@ input[type="radio"]:checked:after {
     z-index: 1;
     transition: top 1.0s;
 }
-#menu-popup { /* box containing menu */
+.menu-popup { /* box containing menu */
     height: 400px;
     top: -640px;
     left: 60px;
@@ -167,11 +178,21 @@ input[type="radio"]:checked:after {
     z-index: 1;
     transition: top 0.8s;
 }
+.popup-visible { /* additional class for menu popup and alert popup */
+    top: 20px;
+}
 .invisible-box { /* invisible box with text in it to be programatically selected, then copied */
     position: fixed;
-    bottom: 0px;
+    bottom: -2pt;
     left: 0px;
     font-size: 2pt; /* can't be display:none or visibility:hidden because you can't select those */
+}
+.invisible-frame {
+    position: fixed;
+    bottom: -200px;
+    left: -200px;
+    width: 200px;
+    height: 200px;
 }
 .image-mask { /* mask for rolling image */
     position: relative;
@@ -208,6 +229,14 @@ input[type="radio"]:checked:after {
     width: 100%;
     height: 100%;
 }
+.container-fill {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    border: 0;
+    padding: 0;
+}
 /* input box */
 input.search {
     position: relative;
@@ -232,7 +261,7 @@ button:active {
     border-style: solid;
     border-color: #c80058;
 }
-button:hover:after { /* hover text */
+button:hover::after { /* hover text */
     position: absolute;
     top: -20px;
     padding: 2px 4px 0px 4px;
@@ -247,7 +276,7 @@ button:hover:after { /* hover text */
 }
 button.search { /* button to initiate search */
     position: relative;
-    top: 6px;
+    top: 5px;
     height: 40px;
     width: 40px;
     padding-top: 0;
@@ -269,7 +298,7 @@ button.bookmark-list { /* open the list of bookmarks (which is a feature I have 
     border-radius: 6px;
     color: #e0e8ec;
     background-color: #c80058;
-    background-image: url("img/bookmark-list.png");
+    background-image: url("img/bookmark-list.svg");
     background-size: 32px;
     visibility: visible;
 }
@@ -286,10 +315,9 @@ button.back, button.settings { /* go to previous page */
     font-weight: bold;
     color: #ffffff;
     background-color: #c80058;
-    visibility: hidden;
 }
 button.settings {
-    background-image: url("img/settings.png");
+    background-image: url("img/settings.svg");
     background-size: 32px;
     background-repeat: no-repeat;
     background-position: center;
@@ -306,14 +334,14 @@ button.embed, button.window, button.download, button.copy { /* 4 stream buttons 
     color: #e0e8ec;
     background-color: #c80058;
 }
-button.embed { background-image: url("img/embed.png"); }
-button.embed:hover:after { content: "embed this video in the page"; }
-button.window { background-image: url("img/open-in-new.png"); }
-button.window:hover:after { content: "pop-out this video into a new window"; }
-button.download { background-image: url("img/download.png"); }
-button.download:hover:after { content: "download this video"; }
-button.copy { background-image: url("img/copy-to-clipboard.png"); }
-button.copy:hover:after { content: "copy a link to this video to your clipboard"; }
+button.embed { background-image: url("img/embed.svg"); }
+button.embed:hover::after { content: "embed this video in the page"; }
+button.window { background-image: url("img/open-in-new.svg"); }
+button.window:hover::after { content: "pop-out this video into a new window"; }
+button.download { background-image: url("img/download.svg"); }
+button.download:hover::after { content: "download this video"; }
+button.copy { background-image: url("img/copy-to-clipboard.svg"); }
+button.copy:hover::after { content: "copy a link to this video to your clipboard"; }
 .arr { /* box to rotate arrow inside button */
     transform: translate(3px, -22px) rotate(90deg);
 }
@@ -336,6 +364,18 @@ button.next { float: right; }
 img.logo { /* contains logo; expands to width of container */
     float: left;
     width: 270px;
+}
+
+iframe[src=""] { /* iframes with unset src are not rendered */
+    display: none;
+}
+
+.noclick {
+    cursor: default;
+}
+.tryfixed { /* attempt to make this fixed width */
+    display: inline-block;
+    min-width: 7em; /* about the width of "MyCloud (360p): " */
 }
 
 /* smartphone specific styles; basically deprecated */

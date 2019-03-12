@@ -3,16 +3,57 @@
 <head>
   <title>Opcor</title>
   <link rel="stylesheet" href="shiny.css">
-  <script type="text/javascript" src="scrape.js"></script>
+  <script type="text/javascript" src="helper.js"></script>
   <script>
     var video;
     function loadVideo() {
-      document.getElementById('video-source').src = window.location.hash.slice(1);
-      if (!video) { video = document.getElementById('video-fill'); }
-      //video.focus(); // this was only necessary when there was an iframe
-      video.load();
-      video.play();
+      let url = window.location.hash.slice(1);
+      
+      if (url.match(/\.m3u8$/g)) { // if m3u8 stream
+        let iframe = document.createElement('iframe');
+        iframe.classList.add('container-fill');
+        iframe.setAttribute('src', url);
+        iframe.setAttribute('allowfullscreen', '');
+        iframe.addEventListener('load', () => {
+          iframe.contentDocument.body.innerHTML = '';
+          iframe.contentDocument.body.setAttribute('style', 'height:100%;background:#1c1c1c;margin:0;padding:0;');
+          let hlsScript = iframe.contentDocument.createElement('script'); // attach hls.js script
+          hlsScript.setAttribute('src', 'https://s3.amazonaws.com/palossand.com/opcor/hls.light.min.js');
+          iframe.contentDocument.head.appendChild(hlsScript);
+
+          video = iframe.contentDocument.createElement('video'); // insert video element
+          video.setAttribute('id', 'player');
+          video.setAttribute('controls', '');
+          video.setAttribute('style', 'position:absolute;height:100%;width:100%;');
+
+          hlsScript.setAttribute('onload', 'hlsLoaded()'); // insert main content script
+          let mainScript = iframe.contentDocument.createElement('script');
+          mainScript.innerHTML = `function hlsLoaded() {
+            let video = document.getElementById('player');
+            video.focus();
+            let hls = new Hls();
+            hls.loadSource('${url.split('/').pop()}');
+            hls.attachMedia(video);
+            hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch((err) => null));
+          };`;
+          iframe.contentDocument.body.appendChild(video);
+          iframe.contentDocument.head.appendChild(mainScript);
+
+          iframe.contentDocument.body.onkeydown = onPress;
+          // let keysScript = iframe.contentDocument.createElement('script'); // insert keyboard script
+          // keysScript.innerHTML = document.getElementById('video-keys-script').innerHTML; // copy
+          // iframe.contentDocument.body.appendChild(keysScript);
+        });
+        document.body.appendChild(iframe);
+      }
+      else { // otherwise, assume mp4 stream
+        video = document.getElementById('video-fill');
+        video.src = window.location.hash.slice(1);
+        video.load();
+        video.play();
+      }
     }
+
     function onPress(event) {
       if (!(event.ctrlKey || event.metaKey || event.shiftKey)) {
         switch (event.keyCode) {
@@ -29,8 +70,14 @@
           case 76: // l
             video.currentTime += 10; // skip forward 10 seconds
             break;
-          case 70:
-            if (!document.webkitFullscreenElement) {
+          case 37: // left arrow
+            video.currentTime -= 5; // skip back 5 seconds
+            break;
+          case 39: // right arrow
+            video.currentTime += 5; // skip forward 5 seconds
+            break;
+          case 70: // f
+            if (!document.webkitFullscreenElement) { // toggle fullscreen
               video.webkitRequestFullscreen();
             }
             else {
@@ -46,8 +93,6 @@
   </script>
 </head>
 <body onload="loadVideo()" onkeydown="onPress(event)">
-  <video id="video-fill" controls>
-    <source id="video-source" src="" type="video/mp4">
-  </video>
+  <video id="video-fill" controls></video>
 </body>
 </html>

@@ -216,7 +216,7 @@ function displayEpisodeList() { // displays the contents of episodeList
         seasonNum = titleList.pop(); // if last char is season number
     let wikiLink = "https://en.wikipedia.org/wiki/Special:Search?search=list+of+"
         + titleList.join('+') + "+episodes";
-    let displayText = `<a href="${wikiLink}" target="blank">${resultList[pageHistory.resultIndex][0]}</a>`; // show/movie name with wikipedia link
+    let displayText = `<a href="${wikiLink}" target="_blank">${resultList[pageHistory.resultIndex][0]}</a>`; // show/movie name with wikipedia link
 
     for (let i = 0; i < episodeList.length; i++) {
         displayText += `<div class="result-box" style="animation-delay:${((i%7/10)-0.3)}s;"
