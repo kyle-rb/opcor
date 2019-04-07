@@ -35,7 +35,7 @@ input[type="radio"]::after {
     box-shadow: 1px 1px 1px #60686c inset;
     background-color: #e8f0f4;
     font-size: 0px;
-    color: #c80059;
+    color: #c80058;
     line-height: 8px;
     text-indent: -7px;
     overflow: hidden;
@@ -271,7 +271,7 @@ button:hover::after { /* hover text */
     border-radius: 2px;
     font-family: "futura", "futura-dl";
     font-size: 14pt;
-    color: #c80059;
+    color: #c80058;
     background-color: #f0f8fc;
     opacity: .9;
     white-space: nowrap;
@@ -416,7 +416,7 @@ iframe[src=""] { /* iframes with unset src are not rendered */
 
 /*
 COLORS:
-  pink:      #c80059 -> text color
+  pink:      #c80058 -> text color
   purple:    #6000f0 -> selection
   dark-gray: #1c1c1c -> background color
   red:       #b01030 -> old button color

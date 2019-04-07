@@ -8,19 +8,15 @@ let ffff = 'hexid';
 // this fakes just enough jQuery for OpenLoad to work
 function fakeQuery(input) {
   if (input === document) {
-    console.log('asking for onload callback');
     return { 'ready': function(callback) { callback(); } }; // document.ready callback
   }
   else if (input === '#hexid') {
-    console.log('asking for #hexid');
     return { 'text': function() { return openloadHexString; } }; // retrieving a value
   }
   else if (input === '#streamurl' || input === '#streamuri' || input === '#streamurj') {
-    console.log('asking for #streamurl or similar');
     return { 'text': function(val) { openloadStreamUrl = val; } }; // setting a value
   }
   else {
-    console.log('asking for other value:', input);
     // I think they swapped out #streamurl for something else, so this is the lazy workaround
     return { "text": function(val) { openloadStreamUrl = val; } }; // default to setting a value
   }
@@ -51,7 +47,7 @@ let model = {
         const episodeCountStart = 'Eps<span>', episodeCountEnd = '</span>'
         let resultCount = (resultsPage.match(/\s\|\s/g)||[]).length;
 
-        let sections = getSubstrings(resultsPage, sectionStart, sectionEnd, resultCount);
+        let sections = getSubstrings(resultsPage, sectionStart, sectionEnd, resultCount);
 
         resultList = sections.map((section) => ({
           url: baseDomain + '/' + getSubstrings(section,urlStart,urlEnd)[0].slice(urlStart.length),
@@ -67,7 +63,9 @@ let model = {
   getEpisodeList: function(mediaUrl) {
     let mediaId = mediaUrl.split('.').pop(); // show/movie's id follows the last '.' in url
     let dataUrl = `${baseDomain}/ajax/film/servers/${mediaId}`;
-    return fetch(dataUrl).then((res) => res.text()).then((episodesPage) => {
+    return fetch(dataUrl, {
+      headers: { 'x-requested-with': 'XMLHttpRequest' }
+    }).then((res) => res.text()).then((episodesPage) => {
       const sectionStart = 'fa-server',               sectionEnd = '<\\/div>\\n';
       const idStart = 'data-id=\\"',                  idEnd = '\\"';
       const titleStart = '\\">',/* 3 extra matches */ titleEnd = '<';
@@ -123,11 +121,9 @@ let model = {
   // returns streamList: [ { name: 'openload', url: 'https://url.ex/ample' type: 'mp4' } ]
   // (openload streams are of type mp4 and mycloud streams are hls)
   getStreamList: function(streams) {
-    const fmoviesReferer = 'http://ffmovies.ru/~';//'https://www6.fmovies.to/~'; // both result in 403
-    const myCloudReferer = 'https://mcloud.to/~'; // possibly change them in the future?
     const hosts = {
       'OpenLoad':   { id: '24', resolve: resolveOpenLoad },
-      'MyCloud':    { id: '28', resolve: resolveMyCloud },
+      'MyCloud':    { id: '28', resolve: resolveNothing }, // resolution moved to window.html
       'Other':      { id: '30', resolve: () => [] }, // default to nothing
       'Streamango': { id: '34', resolve: () => [] },
     }
@@ -205,6 +201,18 @@ function resolveMyCloud(url, referer) {
     else {
       return [];
     }
+  });
+}
+
+// doesn't actually do anything, just creates a Promise that resolves with the right format
+function resolveNothing(url, referer) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => resolve([{
+      name: 'MyCloud',
+      type: 'hls',
+      src: url,
+      referer: referer, // pass so that resolution can happen later
+    }]), 0);
   });
 }
 

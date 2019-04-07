@@ -4,15 +4,22 @@
   <title>Opcor</title>
   <link rel="stylesheet" href="shiny.css">
   <script type="text/javascript" src="helper.js"></script>
+  <script type="text/javascript" src="model.js"></script>
   <script>
     var video;
     function loadVideo() {
       let url = window.location.hash.slice(1);
+
+      // TODO:
+      //  - cleanup: remove various console.logs, get proper referer
+      //  - figure out no-cors thing
       
-      if (url.match(/\.m3u8$/g)) { // if m3u8 stream
+      if (url.match(/mcloud/g)) { // if mcloud url
+        let referer;
+        [url, referer] = url.split('#'); // referer is after the '#' after the primary url
         let iframe = document.createElement('iframe');
         iframe.classList.add('container-fill');
-        iframe.setAttribute('src', url);
+        iframe.setAttribute('src', referer);
         iframe.setAttribute('allowfullscreen', '');
         iframe.addEventListener('load', () => {
           iframe.contentDocument.body.innerHTML = '';
@@ -32,7 +39,7 @@
             let video = document.getElementById('player');
             video.focus();
             let hls = new Hls();
-            hls.loadSource('${url.split('/').pop()}');
+            hls.loadSource('${url}');
             hls.attachMedia(video);
             hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch((err) => null));
           };`;
@@ -94,5 +101,7 @@
 </head>
 <body onload="loadVideo()" onkeydown="onPress(event)">
   <video id="video-fill" controls></video>
+
+  <div id="iframe-box" class="invisible-frame"></div> <!-- for requests with referer -->
 </body>
 </html>

@@ -40,7 +40,7 @@ function init() {
         this.resultIndex = index;
         model.getEpisodeList(this.resultList[index].url).then((episodeList) => {
           this.episodeList = episodeList;
-          if (this.resultList[index].episodeCount === 0) { // if movie, go directly to streams
+          if (this.isMovie) { // if movie, go directly to streams
             this.getStreams(0);
           }
           else { // otherwise, for tv show
@@ -71,7 +71,7 @@ function init() {
           this.state = this.STATES.SEARCH;
         }
         else if (this.state === this.STATES.STREAMS) {
-          if (this.resultList[this.resultIndex].episodeCount > 0) { // if show, go back to episodes
+          if (!this.isMovie) { // if show, go back to episodes
             this.state = this.STATES.EPISODES;
           }
           else { // otherwise this is a movie; go to search
@@ -79,8 +79,25 @@ function init() {
           }
         }
       },
-      embedVideo: function(url) {
-        this.embedSrc = url;
+      embedVideo: function(stream) {
+        if (stream.type === 'mp4') {
+          this.embedSrc = stream.src;
+        }
+        else {
+          resolveMyCloud(stream.src, stream.referer).then((hlsStream) => {
+            this.embedSrc = hlsStream[0].src + '#' + stream.src;
+          });
+        }
+      },
+      openVideoInNew: function(stream) {
+        if (stream.type === 'mp4') {
+          window.open('window.html#' + stream.src, '_blank');
+        }
+        else {
+          resolveMyCloud(stream.src, stream.referer).then((hlsStream) => {
+            window.open('window.html#' + hlsStream[0].src + '#' + stream.src, '_blank');
+          });
+        }
       },
       copyText: function(text) {
         copyText(text);
@@ -102,8 +119,11 @@ function init() {
       },
     },
     computed: {
+      isMovie: function() { // false if result state, or if tv show in episodes/streams state
+        return (this.resultIndex >= 0) && (this.resultList[this.resultIndex].episodeCount === 0);
+      },
       fullTitle: function() { // either movie name or show/episode names
-        if (this.episodeList[this.episodeIndex]) { // if current episode is defined, use it
+        if (!this.isMovie && this.episodeList[this.episodeIndex]) { // if not movie, and ep selected
           return `${this.resultList[this.resultIndex].title}: ${this.episodeList[this.episodeIndex].title}`;
         }
         else { // otherwise just use the show/movie's title
@@ -119,20 +139,21 @@ function init() {
         return `https://en.wikipedia.org/wiki/Special:Search?search=list+of+${titleList.join('+')}+episodes`;
       },
     },
-    watchers: {
+    watch: {
       state: function(newState, oldState) {
         if (oldState === this.STATES.STREAMS) {
           this.embedSrc = '';
           this.episodeIndex = -1;
-          console.log('moving away from STREAMS state, setting episodeIndex to -1');
         }
 
         switch (newState) {
           case this.STATES.STREAMS:
-            if (oldState === this.STATES.EPISODES) this.scrollPos = document.body.scrollTop;
+            if (oldState === this.STATES.EPISODES) this.scrollPos = document.body.scrollTop; // save
             break;
           case this.STATES.EPISODES:
-            document.body.scrollTop = this.scrollPos; // restore
+            window.setTimeout(() => { // set 0 second timeout to wait for render to happen
+              document.body.scrollTop = this.scrollPos; // restore
+            }, 0);
             break;
           case this.STATES.SEARCH:
             this.episodeList = [];

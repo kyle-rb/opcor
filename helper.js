@@ -116,7 +116,7 @@ function fetchWithReferer(url, referer) {
     iframe.setAttribute('src', referer);
     iframe.addEventListener('load', () => {
       let script = iframe.contentDocument.createElement('script');
-      script.innerHTML = `fetch('${url}').then(window.callback);`;
+      script.innerHTML = `fetch('${url}', { headers: { 'x-requested-with': 'XMLHttpRequest' } }).then(window.callback);`;
       iframe.contentWindow.callback = (response) => {
         resolve(response);
         //container.removeChild(iframe);

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+is<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
@@ -83,10 +83,11 @@
           <span >{{ fullTitle }}</span>
 
           <div class="result-box noclick" v-for="(stream, i) in streamList" :style="(i%7/10)-0.3 | animationDelay">
-            <span class="tryfixed">{{ stream.name }}: </span><button class="embed" @click="embedVideo(stream.src, stream.type)"></button>
-            <a :href="stream.src | windowUrl" target="_blank">
+            <span class="tryfixed">{{ stream.name }}: </span>
+            <button class="embed" @click="embedVideo(stream)"></button>            <button class="window" @click="openVideoInNew(stream)"></button>
+            <!-- <a :href="stream.src | windowUrl" target="_blank">
               <button class="window"></button>
-            </a>
+            </a> changed to button for weird reasons to do with being blocked -->
             <button v-if="stream.type === 'mp4'" class="copy" @click="copyText(stream.src)"></button>
           </div>
 
