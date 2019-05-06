@@ -35,7 +35,9 @@ let model = {
     encodedQueryString = encodedQueryString.replace(/\s+/g, "+"); // replace spaces with pluses
     let queryUrl = baseDomain + "/search?keyword=" + encodedQueryString;
 
-    return fetch(queryUrl).then((res) => res.text()).then((resultsPage) => {
+    return fetch(queryUrl, {
+      credentials: 'include',
+    }).then((res) => res.text()).then((resultsPage) => {
       if (!resultsPage || resultsPage.includes("No result found.")
                        || resultsPage.includes("Error 404")) {
         resultList = [];
@@ -64,7 +66,8 @@ let model = {
     let mediaId = mediaUrl.split('.').pop(); // show/movie's id follows the last '.' in url
     let dataUrl = `${baseDomain}/ajax/film/servers/${mediaId}`;
     return fetch(dataUrl, {
-      headers: { 'x-requested-with': 'XMLHttpRequest' }
+      credentials: 'include',
+      headers: { 'x-requested-with': 'XMLHttpRequest' },
     }).then((res) => res.text()).then((episodesPage) => {
       const sectionStart = 'fa-server',               sectionEnd = '<\\/div>\\n';
       const idStart = 'data-id=\\"',                  idEnd = '\\"';
@@ -190,7 +193,7 @@ function resolveMyCloud(url, referer) {
     
     let listUrl = getSubstrings(embedPage, listUrlStart, listUrlEnd)[0].slice(listUrlStart.length);
 
-    if (listUrl) { // TODO: fetch list (with referer), parse it, and get list of all m3u8s
+    if (listUrl) {
       console.log('Got MyCloud list url:', listUrl);
       return [{
         name: 'MyCloud',

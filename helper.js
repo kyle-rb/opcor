@@ -116,7 +116,7 @@ function fetchWithReferer(url, referer) {
     iframe.setAttribute('src', referer);
     iframe.addEventListener('load', () => {
       let script = iframe.contentDocument.createElement('script');
-      script.innerHTML = `fetch('${url}', { headers: { 'x-requested-with': 'XMLHttpRequest' } }).then(window.callback);`;
+      script.innerHTML = `fetch('${url}', { credentials: 'include', headers: { 'x-requested-with': 'XMLHttpRequest' } }).then(window.callback);`;
       iframe.contentWindow.callback = (response) => {
         resolve(response);
         //container.removeChild(iframe);
@@ -126,6 +126,32 @@ function fetchWithReferer(url, referer) {
       iframe.contentDocument.body.appendChild(script);
     });
     container.appendChild(iframe);
+  });
+}
+
+
+
+function attemptRecaptcha() {
+  return new Promise((resolve, reject) => {
+    let container = document.getElementById('captcha-box');
+    let iframe = document.createElement('iframe');
+    iframe.setAttribute('src', referer);
+    iframe.addEventListener('load', () => {
+      let script = iframe.contentDocument.createElement('script');
+      script.innerHTML = `
+        document.querySelectorAll('input[type=submit]').onClick=function(){};
+        fetch('${url}', {headers: {'x-requested-with': 'XMLHttpRequest'}}).then(window.callback);
+      `;
+      iframe.contentWindow.callback = (response) => {
+        resolve(response);
+        //container.removeChild(iframe);
+        // we can't do this here for some reason, it breaks the whole page
+        // so I'm just clearing this box every time a transition goes through, in controller.js
+      };
+      iframe.contentDocument.body.appendChild(script);
+    });
+    container.appendChild(iframe);
+
   });
 }
 

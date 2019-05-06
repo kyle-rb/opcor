@@ -31,6 +31,15 @@ function init() {
           this.state = this.STATES.SEARCH;
           this.justLaunched = false;
         }).catch((error) => {
+          window.open(baseDomain);
+          // on request fail
+          // pop open google recaptcha in window
+          // modify that window to hijack submit button
+          // attempt POST to /waf-verify with data g-recaptcha-response: 03AOLTBLSegiLae88sqy...
+          // check response for set-cookie header, save value for future requests
+          // if correct, let user know to retry that request?
+          // clear the verify box of iframes when transition occurs?
+
           this.resultList = [];
           this.state = this.STATES.SEARCH;
           this.justLaunched = false;
@@ -91,11 +100,11 @@ function init() {
       },
       openVideoInNew: function(stream) {
         if (stream.type === 'mp4') {
-          window.open('window.html#' + stream.src, '_blank');
+          window.open('window.html#' + stream.src);
         }
         else {
           resolveMyCloud(stream.src, stream.referer).then((hlsStream) => {
-            window.open('window.html#' + hlsStream[0].src + '#' + stream.src, '_blank');
+            window.open('window.html#' + hlsStream[0].src + '#' + stream.src);
           });
         }
       },
@@ -108,6 +117,10 @@ function init() {
       },
       slideOutMenu: function() { // add functionality to save settings
         this.menuVisible = false;
+      },
+
+      openRecaptcha: function() {
+        window.open(baseDomain + '/ajax/episode/info');
       },
 
       showAlert: function(message, duration) { // duration in seconds

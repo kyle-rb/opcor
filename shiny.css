@@ -305,7 +305,7 @@ button.bookmark-list { /* open the list of bookmarks (which is a feature I have 
     background-size: 32px;
     visibility: visible;
 }
-button.back, button.settings { /* go to previous page */
+button.back, button.settings, button.check { /* go to previous page */
     position: absolute;
     top: 8px;
     left: 8px;
@@ -325,6 +325,10 @@ button.settings {
     background-repeat: no-repeat;
     background-position: center;
     visibility: visible;
+}
+button.check {
+    top: 56px;
+    font-size: 20pt;
 }
 button.embed, button.window, button.download, button.copy { /* 4 stream buttons in a row */
     position: relative;

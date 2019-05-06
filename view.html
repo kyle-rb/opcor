@@ -1,4 +1,4 @@
-is<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
@@ -15,6 +15,7 @@ is<!DOCTYPE html>
       <div class="arr">&#8623;</div>
     </button>
     <button v-if="state === STATES.SEARCH" class="settings" @click="toggleMenu"></button>
+    <button class="check" @click="openRecaptcha">&#10004;</button>
 
     <div class="banner"> <!-- contains alert popup, menu popup, and Opcor logo -->
       <div class="alert-spacer"> <!-- centers alert -->
@@ -104,6 +105,8 @@ is<!DOCTYPE html>
         <iframe class="video-embed" :src="embedSrc | windowUrl" allowfullscreen></iframe>
       </div>
     </div>
+
+    <div id="captcha-box"></div> <!-- visible iframe used for recaptcha-verification requests -->
 
     <div id="select-box" class="invisible-box"></div> <!-- for clipboard functionality -->
 
