@@ -10,12 +10,13 @@ function init() {
       STATES: STATES,
       state: STATES.SEARCH, // decide which section to show
       justLaunched: true, // decide whether to show search bar explanation text
+      seasonIndex: -1,
       episodeIndex: -1,
       resultIndex: -1,
       scrollPos: 0,
 
       resultList: [],
-      episodeList: [],
+      episodeList: [], // actually contains episodes nested in seasons
       streamList: [],
 
       alertText: '', // in popup notification
@@ -31,15 +32,7 @@ function init() {
           this.state = this.STATES.SEARCH;
           this.justLaunched = false;
         }).catch((error) => {
-          window.open(baseDomain);
-          // on request fail
-          // pop open google recaptcha in window
-          // modify that window to hijack submit button
-          // attempt POST to /waf-verify with data g-recaptcha-response: 03AOLTBLSegiLae88sqy...
-          // check response for set-cookie header, save value for future requests
-          // if correct, let user know to retry that request?
-          // clear the verify box of iframes when transition occurs?
-
+          console.error(error);
           this.resultList = [];
           this.state = this.STATES.SEARCH;
           this.justLaunched = false;
@@ -50,26 +43,30 @@ function init() {
         model.getEpisodeList(this.resultList[index].url).then((episodeList) => {
           this.episodeList = episodeList;
           if (this.isMovie) { // if movie, go directly to streams
-            this.getStreams(0);
+            this.getStreams(0, 0);
           }
           else { // otherwise, for tv show
             this.episodeList = episodeList;
             this.state = this.STATES.EPISODES;
           }
         }).catch((error) => {
+          console.error(error);
           this.episodeList = [];
           this.state = this.STATES.EPISODES;
         });
       },
-      getStreams: function(index) {
+      getStreams: function(seIndex, epIndex) { // season and episode indices
         this.embedSrc = ''; // in case of next/prev episode navigation
         document.getElementById('iframe-box').innerHTML = ''; // kill iframes
-        model.getStreamList(this.episodeList[index].streams).then((streamList) => {
-          this.episodeIndex = index;
+        model.getStreamList(this.episodeList[seIndex].episodes[epIndex].url).then((streamList) => {
+          this.seasonIndex = seIndex;
+          this.episodeIndex = epIndex;
           this.streamList = streamList;
           this.state = this.STATES.STREAMS;
         }).catch((error) => {
-          this.episodeIndex = index;
+          console.error(error);
+          this.seasonIndex = seIndex;
+          this.episodeIndex = epIndex;
           this.streamList = [];
           this.state = this.STATES.STREAMS;
         });
@@ -118,11 +115,6 @@ function init() {
       slideOutMenu: function() { // add functionality to save settings
         this.menuVisible = false;
       },
-
-      openRecaptcha: function() {
-        window.open(baseDomain + '/ajax/episode/info');
-      },
-
       showAlert: function(message, duration) { // duration in seconds
         this.alertText = message;
         setTimeout(() => this.dismissAlert(), duration * 1000);
@@ -133,11 +125,11 @@ function init() {
     },
     computed: {
       isMovie: function() { // false if result state, or if tv show in episodes/streams state
-        return (this.resultIndex >= 0) && (this.resultList[this.resultIndex].episodeCount === 0);
+        return (this.resultIndex>=0) && (this.resultList[this.resultIndex].url.includes('/movie/'));
       },
       fullTitle: function() { // either movie name or show/episode names
-        if (!this.isMovie && this.episodeList[this.episodeIndex]) { // if not movie, and ep selected
-          return `${this.resultList[this.resultIndex].title}: ${this.episodeList[this.episodeIndex].title}`;
+        if (!this.isMovie && this.episodeList[this.seasonIndex]) {
+          return `${this.resultList[this.resultIndex].title}: ${this.episodeList[this.seasonIndex].title}: ${this.episodeList[this.seasonIndex].episodes[this.episodeIndex].title}`;
         }
         else { // otherwise just use the show/movie's title
           return this.resultList[this.resultIndex].title;
@@ -156,6 +148,7 @@ function init() {
       state: function(newState, oldState) {
         if (oldState === this.STATES.STREAMS) {
           this.embedSrc = '';
+          this.seasonIndex = -1;
           this.episodeIndex = -1;
         }
 

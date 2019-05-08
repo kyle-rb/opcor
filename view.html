@@ -15,7 +15,7 @@
       <div class="arr">&#8623;</div>
     </button>
     <button v-if="state === STATES.SEARCH" class="settings" @click="toggleMenu"></button>
-    <button class="check" @click="openRecaptcha">&#10004;</button>
+    <!-- <button class="check" @click="openRecaptcha">&#10004;</button> -->
 
     <div class="banner"> <!-- contains alert popup, menu popup, and Opcor logo -->
       <div class="alert-spacer"> <!-- centers alert -->
@@ -53,7 +53,7 @@
         <div v-else>
           <span>are any of these the thing you wanted to watch?</span>
           
-          <div v-for="(result, i) in resultList" class="result-box" :class="{ 'movie': result.episodeCount === 0, 'tvshow': result.episodeCount > 0 }" :style="(i%7/10)-0.3 | animationDelay" @click="getEpisodesOrMovie(i)">
+          <div v-for="(result, i) in resultList" class="result-box" :class="{ 'movie': result.url.includes('/movie/'), 'tvshow': result.url.includes('/series/') }" :style="(i%7/10)-0.3 | animationDelay" @click="getEpisodesOrMovie(i)">
             {{ result.title }}
           </div>
           
@@ -62,15 +62,26 @@
       </div>
     </div>
 
-    <div class="scale-box" v-if="state === STATES.EPISODES">
-      <div class="content-box">
-        <span v-if="episodeList.length === 0">looks like this show or movie isn't currently available from any host</span>
+    <div v-if="state === STATES.EPISODES">
+      <div class="scale-box" v-if="episodeList.length === 0">
+        <div class="content-box">
+        	<span>looks like this show isn't currently available from any host</span>
+        </div>
+      </div>
+    
+      <div v-else>
+        <div class="scale-box">
+          <div class="content-box">
+            <a :href="wikiLink" target="_blank">{{ fullTitle }}</a>
+          </div>
+        </div>
 
-        <div v-else>
-          <a :href="wikiLink" target="_blank">{{ fullTitle }}</a>
-
-          <div class="result-box" v-for="(episode, i) in episodeList" :style="(i%7/10)-0.3 | animationDelay" @click="getStreams(i)">
-            {{ episode.title }}
+        <div class="scale-box" v-for="(season, i) in episodeList">
+          <div class="content-box">
+            <span>{{ season.title }}</span>
+            <div class="result-box" v-for="(episode, j) in season.episodes" :style="(j%7/10)-0.3 | animationDelay" @click="getStreams(i, j)">
+              {{ episode.title }}
+            </div>
           </div>
         </div>
       </div>
@@ -85,16 +96,17 @@
 
           <div class="result-box noclick" v-for="(stream, i) in streamList" :style="(i%7/10)-0.3 | animationDelay">
             <span class="tryfixed">{{ stream.name }}: </span>
-            <button class="embed" @click="embedVideo(stream)"></button>            <button class="window" @click="openVideoInNew(stream)"></button>
+            <button class="embed" @click="embedVideo(stream)"></button>
+            <button class="window" @click="openVideoInNew(stream)"></button>
             <!-- <a :href="stream.src | windowUrl" target="_blank">
               <button class="window"></button>
             </a> changed to button for weird reasons to do with being blocked -->
             <button v-if="stream.type === 'mp4'" class="copy" @click="copyText(stream.src)"></button>
           </div>
 
-          <div v-if="episodeList.length > 1" class="result-box prevnext noclick">
-            <button class="prev" v-if="episodeIndex > 0" @click="getStreams(episodeIndex-1)">&larr;</button>
-            <button class="next" v-if="episodeIndex < episodeList.length - 1" @click="getStreams(episodeIndex+1)">&rarr;</button>
+          <div v-if="episodeList[seasonIndex].episodes.length > 1" class="result-box prevnext noclick">
+            <button class="prev" v-if="episodeIndex > 0" @click="getStreams(seasonIndex, episodeIndex-1)">&larr;</button>
+            <button class="next" v-if="episodeIndex < episodeList[seasonIndex].episodes.length - 1" @click="getStreams(seasonIndex, episodeIndex+1)">&rarr;</button>
           </div>
         </div>
       </div>

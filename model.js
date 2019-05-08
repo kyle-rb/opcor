@@ -33,7 +33,7 @@ let model = {
     let encodedQueryString = queryInput.trim().toLowerCase();
     encodedQueryString = encodedQueryString.replace(/[^A-Za-z0-9\s]/g,""); // remove special chars
     encodedQueryString = encodedQueryString.replace(/\s+/g, "+"); // replace spaces with pluses
-    let queryUrl = baseDomain + "/search?keyword=" + encodedQueryString;
+    let queryUrl = baseDomain + "/search?s=" + encodedQueryString;
 
     return fetch(queryUrl, {
       credentials: 'include',
@@ -43,18 +43,17 @@ let model = {
         resultList = [];
       }
       else {
-        const sectionStart = 'data-tip=',      sectionEnd = '</a> </div>';
-        const urlStart = '"/film/',            urlEnd = '"';
-        const titleStart = 'alt="',            titleEnd = ' | ';
-        const episodeCountStart = 'Eps<span>', episodeCountEnd = '</span>'
-        let resultCount = (resultsPage.match(/\s\|\s/g)||[]).length;
+        const sectionStart = '<div class="featuredItems singleVideo"',
+              sectionEnd = '<div class="popcontents">';
+        const urlStart = 'href="',    urlEnd = '"';
+        const titleStart = 'title="', titleEnd = '"';
+        let resultCount = (resultsPage.match(/featuredItems/g)||[]).length;
 
         let sections = getSubstrings(resultsPage, sectionStart, sectionEnd, resultCount);
 
         resultList = sections.map((section) => ({
-          url: baseDomain + '/' + getSubstrings(section,urlStart,urlEnd)[0].slice(urlStart.length),
+          url: getSubstrings(section,urlStart,urlEnd)[0].slice(urlStart.length),
           title: getSubstrings(section, titleStart, titleEnd)[0].slice(titleStart.length),
-          episodeCount: +getSubstrings(section, episodeCountStart, episodeCountEnd)[0].slice(episodeCountStart.length),
         }));
       }
       return resultList;
@@ -63,92 +62,102 @@ let model = {
 
   // returns episodeList: [ { title: "Episode 1", streams: [ { host: 'openload', id: '12xyz' } ] } ]
   getEpisodeList: function(mediaUrl) {
-    let mediaId = mediaUrl.split('.').pop(); // show/movie's id follows the last '.' in url
-    let dataUrl = `${baseDomain}/ajax/film/servers/${mediaId}`;
-    return fetch(dataUrl, {
+    return fetch(mediaUrl, {
       credentials: 'include',
-      headers: { 'x-requested-with': 'XMLHttpRequest' },
-    }).then((res) => res.text()).then((episodesPage) => {
-      const sectionStart = 'fa-server',               sectionEnd = '<\\/div>\\n';
-      const idStart = 'data-id=\\"',                  idEnd = '\\"';
-      const titleStart = '\\">',/* 3 extra matches */ titleEnd = '<';
-      const hostNameStart = 'fa-server\\"><\\/i>\\n', hostNameEnd = '\\n';
-      let hostCount = (episodesPage.match(/fa-server/g)||[]).length;
+    }).then((res) => res.text()).then((landingPage) => {
+      if (mediaUrl.includes('/movie/')) { // if this is a movie
+        let movieUrl = getSubstrings(landingPage, baseDomain + '/movie/', '"')[0]; // scrape the url
+        return [
+          { // single season
+            title: '', // with no season name
+            episodes: [ { title: '', url: movieUrl } ], // and single episode
+          },
+        ];
+      }
 
-      let sections = getSubstrings(episodesPage, sectionStart, sectionEnd, hostCount);
-      return sections.map((section) => { // for each host section
-        let episodeCount = (section.match(/href/g)||[]).length; // episodes from this host
+      // else, this is a tv show: start by getting the episode list page url
+      let episodesPageUrl = getSubstrings(landingPage, baseDomain + '/episode/', '"')[0];
+      return fetch(episodesPageUrl, {
+        credentials: 'include', // this promise is nested in order to allow the above to return
+      }).then((res) => res.text()).then((episodesPage) => { // early in the case of movies
+        const seasonStart = 'single_epsiode_row_left', seasonEnd = '</div>\n</div>';
+        const seTitleStart = '<p>',                    seTitleEnd = '</p>';
+        const epUrlStart = 'href="',                   epUrlEnd = '"';
+        const epTitleStart = '.html">',                epTitleEnd = '</a>';
+        let seasonCount = (episodesPage.match(/single_epsiode_row_left/g)||[]).length;
 
-        return {
-          hostName: getSubstrings(section, hostNameStart, hostNameEnd)[0]
-                    .slice(hostNameStart.length).trim(),
-          ids: getSubstrings(section, idStart, idEnd, episodeCount)
-               .map((id) => id.slice(idStart.length)),
-          titles: getSubstrings(section, titleStart, titleEnd, episodeCount+3).slice(3)
-                  .map((title) => title.slice(titleStart.length)),
-        };
-      })
-      .filter((hostData) => hostData.hostName === 'OpenLoad' || hostData.hostName === 'MyCloud')
-      .sort((hostA, hostB) => hostB.ids.length - hostA.ids.length) // host with most titles is first
-      .reduce((episodes, hostData) => {
-        hostData.titles.forEach((title, i) => {
-          // insert current episode data into a matching episode name or insert new episode
-          // this algorithms ensures:
-          //  - primary ordering determined by the host with the most episodes
-          //  - if differently hosted episodes' titles match, the episode's streams are grouped
-          //  - insertion location of episodes not on the first host is determined by lexical order
-          let insertBefore = 0;
-          episodes.forEach((episode, j) => {
-            if (title === episode.title) { // if match found, modify current episode
-              episode.streams.push({ host: hostData.hostName, id: hostData.ids[i] });
-              insertBefore = null;
-              return;
-            }
-            if (title > episode.title) {
-              insertBefore = j + 1;
-            }
-          });
-          if (insertBefore !== null) { // if we haven't added data to an episode, insert new episode
-            episodes.splice(insertBefore, 0, {
-              title: title,
-              streams: [{ host: hostData.hostName, id: hostData.ids[i] }],
-            });
-          }
+        let seasons = getSubstrings(episodesPage, seasonStart, seasonEnd, seasonCount);
+        return seasons.map((season) => { // for each host section
+          let episodeCount = (season.match(/href/g)||[]).length; // episodes from this host
+
+          let episodeUrls = getSubstrings(season, epUrlStart, epUrlEnd, episodeCount);
+          let episodeTitles = getSubstrings(season, epTitleStart, epTitleEnd, episodeCount);
+          let episodes = episodeUrls.map((url, i) => ({
+            title: episodeTitles[i].slice(epTitleStart.length),
+            url: url.slice(epUrlStart.length),
+          }));
+
+          return {
+            title: getSubstrings(season, seTitleStart, seTitleEnd)[0].slice(seTitleStart.length),
+            episodes: episodes,
+          };
         });
-        return episodes;
-      }, [])
-      .map((episode) => ({ title: 'Episode ' + episode.title, streams: episode.streams }));
+      });
     });
   },
 
   // returns streamList: [ { name: 'openload', url: 'https://url.ex/ample' type: 'mp4' } ]
   // (openload streams are of type mp4 and mycloud streams are hls)
-  getStreamList: function(streams) {
-    const hosts = {
-      'OpenLoad':   { id: '24', resolve: resolveOpenLoad },
-      'MyCloud':    { id: '28', resolve: resolveNothing }, // resolution moved to window.html
-      'Other':      { id: '30', resolve: () => [] }, // default to nothing
-      'Streamango': { id: '34', resolve: () => [] },
-    }
-    return Promise.all(streams.map((stream) => {
-      let serverId = hosts[stream.host].id;
-      let hourTimestamp = getAlteredTimestamp();
-      let properties = ["id",      "server", "ts"];
-      let values =     [stream.id, serverId, hourTimestamp];
-      let hashParam = getHashParam(properties, values);
-
-      let requestUrl = `${baseDomain}/ajax/episode/info?ts=${hourTimestamp}&_=${hashParam}&id=${stream.id}&server=${serverId}`;
-
-      return fetchWithReferer(requestUrl, requestUrl).then((res) => res.json()).then((data) => {
-        if (data.error || !data.target) return [];
-
-        let rotateAmount = ('h'.charCodeAt(0) - data.target.charCodeAt(0)) % 26; // assume "https"
-        if (rotateAmount < 0) rotateAmount += 26;
-        let embedPageUrl = rotate(data.target, rotateAmount); // just in case this is reactivated
-
-        return hosts[stream.host].resolve(embedPageUrl, requestUrl); // resolve based on host
+  getStreamList: function(url) {
+    return fetch(url, {
+      credentials: 'include',
+    }).then((res) => res.text()).then((episodeLandingPage) => {
+      let playerHostUrl = getSubstrings(episodeLandingPage, 'iframe src="', '"')[0].slice(12);
+      return fetch(playerHostUrl, {
+        credentials: 'include',
       });
-    })).then((streamLists) => streamLists.reduce((fullList, subList) => fullList.concat(subList)));
+    }).then((res) => res.text()).then((playerHostPage) => {
+      const tcStart = 'var tc = \'', tcEnd = '\'';
+      const _tokenStart = '_token": "', _tokenEnd = '"';
+      const sliceBoundStart = ') + "', sliceBoundEnd = '"+"';
+      const sliceParamStart = '"+"', sliceParamEnd = '"';
+      
+      let tc = getSubstrings(playerHostPage, tcStart, tcEnd)[0].slice(tcStart.length);
+      let _token = getSubstrings(playerHostPage, _tokenStart, _tokenEnd)[0]
+                   .slice(_tokenStart.length);
+      let sliceStopBound = getSubstrings(playerHostPage, sliceBoundStart, sliceBoundEnd)[0]
+                           .slice(sliceBoundStart.length);
+      let sliceParam = getSubstrings(playerHostPage, sliceParamStart, sliceParamEnd)[0]
+                       .slice(sliceParamStart.length);
+      let sliceStartPoint = +sliceParam[0]; // beginning of slice "param"
+      let sliceStopPoint = +sliceStopBound;
+
+      let tcSlice = tc.slice(sliceStartPoint, sliceStopPoint)
+      let xToken = tcSlice.split('').reverse().join('') + sliceStopBound + sliceParam;
+
+      return fetch('https://playerhost.net/decoding_v3.php', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'x-token': xToken,
+        },
+        body: `tokenCode=${tc}&_token=${_token}`,
+      });
+    }).then((res) => res.json()).then((streamUrls) => {
+      console.log('Got stream url response!');
+      console.log(streamUrls);
+
+      return Promise.all(streamUrls.map((url) => {
+        if (url.includes('openload.co')) {
+          console.log('found openload url: ' + url);
+          return resolveOpenLoad(url);
+        }
+        else {
+          return []; // TODO: implement other stream type, mainly googlevideo
+        }
+      }));
+    }).then((streamLists) => { console.log(streamLists); return streamLists.reduce((fullList,subList) => fullList.concat(subList),[]) });
   },
 };
 
@@ -159,10 +168,12 @@ function resolveOpenLoad(url, referer) {
   if (url.indexOf('openload') === -1) return [];
 
   return fetch(url).then((res) => res.text()).then((embedPage) => {
-    const hexStart = 'style="">',       hexEnd = '</';
+    const hexStart = 'style=""',       hexEnd = '</';
     const scriptStart = 'var _0x9495=', scriptEnd = '}});';
 
     openloadHexString = getSubstrings(embedPage, hexStart, hexEnd)[0].slice(hexStart.length);
+    let idx = openloadHexString.indexOf('">');
+    openloadHexString = openloadHexString.slice(idx+2);
     let openloadScript = getSubstrings(embedPage, scriptStart, scriptEnd)[0];
     if (openloadHexString && openloadScript) {
       eval(openloadScript + scriptEnd); // this sets openloadStreamUrl
@@ -170,6 +181,7 @@ function resolveOpenLoad(url, referer) {
     else {
       console.error('OpenLoad parsing failed: hex string or script not valid');
       console.log('hex string:', openloadHexString);
+      console.log(url);
     }
 
     if (openloadStreamUrl) {

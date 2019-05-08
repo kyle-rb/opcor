@@ -48,7 +48,7 @@ function checkForUpdate() { // download the version file to see if there is an u
 
     baseDomain = newestVersionFile.baseDomain;
     if (!baseDomain) baseDomain = currentVersionFile.baseDomain;
-    if (!baseDomain) baseDomain = 'https://www6.fmovies.to'; // go to default
+    if (!baseDomain) baseDomain = 'https://www1.123-movies.com'; // go to default
 
     hashInputString = newestVersionFile.hashInputString
                    || currentVersionFile.hashInputString

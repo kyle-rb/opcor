@@ -1,9 +1,9 @@
 {
-    "version": "1.4.2",
-    "baseDomain": "https://www7.fmovies.to",
+    "version": "1.5.0",
+    "baseDomain": "https://ww1.123-movies.com",
     "hashInputString": "51e95a43",
     "hashIndexMultiplier": "1",
     "hashIndexAdditive": "1",
     "hashOperation": "+",
-    "message": "<div style='background-color:#e0e8ec'>fixed issue with new host <a href='#' onclick=\"performUpdate()\">click here to update</a> or if that doesn't work, use the link at the bottom of the page to get a download</div>"
+    "message": "<div style='background-color:#e0e8ec'>switched to new host <br><a href='#' onclick=\"performUpdate()\">click here to update</a> or if that doesn't work, use the link at the bottom of the page to get a download</div>"
 }
